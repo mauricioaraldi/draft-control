@@ -1,0 +1,34 @@
+{
+	"name": "DraftControl",
+	"version": "0.7.0",
+	"description": "Draft Control Project.",
+	"keywords": [
+		"draft",
+		"tcg"
+	],
+	"homepage": "https://github.com/mauricioaraldi/draft-control",
+	"main": "app/app.js",
+	"scripts": {
+		"babel": "babel-node app/app.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": {
+		"name": "Mauricio Araldi",
+		"url": "https://github.com/mauricioaraldi"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mauricioaraldi/draft-control.git"
+	},
+	"dependencies": {
+		"body-parser": "^1.17.2",
+		"express": "^4.15.3",
+		"express-session": "^1.15.3",
+		"socket.io": "^2.1.0"
+	},
+	"devDependencies": {
+		"babel-cli": "^6.26.0",
+		"babel-preset-env": "^1.6.1"
+	}
+}

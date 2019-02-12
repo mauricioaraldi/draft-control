@@ -1,0 +1,101 @@
+﻿@font-face {
+  font-family: 'Planewalker';
+  font-style: normal;
+  font-weight: normal;
+  src: url("../../fonts/Planewalker.woff");
+}
+
+@font-face {
+  font-family: 'Planewalker';
+  font-style: normal;
+  font-weight: bold;
+  src: url("../../fonts/Planewalker Bold.woff");
+}
+
+@font-face {
+  font-family: 'Planewalker';
+  font-style: italic;
+  font-weight: normal;
+  src: url("../../fonts/Planewalker Italic.woff");
+}
+
+@font-face {
+  font-family: 'Planewalker';
+  font-style: italic;
+  font-weight: bold;
+  src: url("../../fonts/Planewalker Bold Italic.woff");
+}
+
+/* ----------- */
+
+.noty_body {
+	font-size: 24px !important;
+}
+
+/* ----------- */
+
+body {
+	font-family: 'Planewalker', 'Times New Roman', 'Arial', 'Sans Serif';
+	font-size: 24px;
+	margin: .5em;
+	margin-bottom: 3em;
+}
+
+input {
+	border:  none;
+	border-bottom: 1px solid #888888;
+	border-radius: 0;
+	box-sizing: border-box;
+	padding: .5rem;
+}
+
+.button {
+	background-color: #ffffff;
+	border: 1px solid #888888;
+	color: #000000;
+	cursor: pointer;
+	padding: .5em;
+	display: inline-block;
+	margin: .5em;
+	transition: all 300ms;
+}
+
+.button:hover {
+	background-color: #dddddd;
+}
+
+.button:active {
+	background-color: #cccccc;
+}
+
+.page.centered {
+	margin: auto;
+	text-align: center;
+}
+
+.hidden {
+	display: none;
+}
+
+.no-margin-left {
+	margin-left: 0;
+}
+
+.autosaving {
+	background-color: #efefef;
+	color: #888888;
+	pointer-events: none;
+}
+
+#loader {
+	background-color: rgba(0, 0, 0, .5);
+	bottom: 0;
+	color: #FFFFFF;
+	font-size: 100px;
+	left: 0;
+	padding-top: 20%;
+	position: fixed;
+	right: 0;
+	text-align: center;
+	top: 0;
+}

@@ -1,0 +1,159 @@
+﻿#logo {
+	color: #EAC117;
+	left: 1rem;
+	position: fixed;
+	text-shadow: 1px 1px 1px #000000;
+	top: 1rem;
+}
+
+h1 {
+	color: #EAC117;
+	font-size: 70px;
+	margin: 0 0 1rem 0;
+	text-align: center;
+	text-shadow: 1px 1px 1px #000000;
+}
+
+#player-inputs {
+	margin: auto;
+	width: 340px;
+}
+
+#player-names p {
+	margin: 1em 0;
+}
+
+#player-names input {
+	display: block;
+	margin: .2em 0;
+	width: 340px;
+}
+
+#init-timer {
+	margin-bottom: 2rem;
+}
+
+#buttons {
+	background-color: #FFFFFF;
+	border-top: 1px solid #888888;
+	bottom: 0;
+	left: 0;
+	position: fixed;
+	right: 0;
+}
+
+#buttons button {
+	float: right;
+	margin: .2em;
+}
+
+/* ------------ */
+
+#suggested-matches p,
+#suggested-matches span {
+	display: inline-block;
+	margin: 0 .5em;
+	padding: .5em;
+}
+
+#suggested-matches p {
+	background-color: #dedede;
+}
+
+.player-table {
+	border: 1px solid #444444;
+	border-collapse: collapse;
+	display: inline-block;
+	margin: .5em;
+	table-layout: fixed;
+	text-align: center;
+	text-shadow: 0px 0px 1px #ffffff;
+	width: 300px;
+}
+
+.player-table .position {
+	border-bottom: 1px solid #000000;
+	font-family: 'Times New Roman', 'Sans Serif';
+}
+
+.player-table td:not(.player-name) {
+	border-bottom: 1px solid #444444;
+}
+
+.player-table tr:last-child td {
+	border-bottom: none;
+}
+
+.player-table .win td:not(.player-name) {
+	background-color: #66FF00;
+}
+
+.player-table .loss td:not(.player-name) {
+	background-color: #FF7E29;
+}
+
+.player-table .player-name {
+	width: 35%;
+}
+
+.player-table .divider {
+	font-size: 18px;
+}
+
+.player-table .score {
+	border-left: 1px solid #444444;
+	border-right: 1px solid #444444;
+	font-size: 30px;
+	padding: 0 .3rem;
+}
+
+.player-table .score,
+.player-table .divider {
+	width: 5%;
+}
+
+.player-table .opp-name {
+	width: 35%;
+	padding: .3rem 0;
+}
+
+/* ---------------- */
+
+label {
+	display: inline-block;
+}
+
+label > span {
+	display: block;
+}
+
+#clock {
+	font-size: 200px;
+}
+
+.alarm-playing {
+	animation: color 500ms infinite step-end;
+	-webkit-animation: color 500ms infinite step-end; /* Safari and Chrome */
+}
+
+@keyframes color { 
+	0% { 
+		background: black;
+		color: white;
+	}
+	50% { 
+		background: white; 
+		color: black;
+	}
+}
+
+@-webkit-keyframes color { /* Safari and Chrome */
+	0% { 
+		background: black;
+		color: white;
+	}
+	50% { 
+		background: white; 
+		color: black;
+	}
+}
