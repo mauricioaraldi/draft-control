@@ -4,7 +4,7 @@
  * @author mauricio.araldi
  * @since 0.2.0
  */
-export default class Player { 
+export default class PlayerModel { 
 	constructor(id, gamesWon, gamesLost, totalGames, matchesWon, matchesLost) {
 		this.id = id;
 		this.gamesWon = gamesWon;

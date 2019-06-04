@@ -28,12 +28,22 @@
 			});
 
 			/**
+			 * When draft is unavailable to connection
+			 *
+			 * @author mauricio.araldi
+			 * @since 0.8.0
+			 */
+			socket.on('draftUnavailable', data => {
+				App.Utils.errorPopup('Draft unavailable');
+			});
+
+			/**
 			 * When draft name changes
 			 * 
 			 * @author mauricio.araldi
 			 * @since 0.6.0
 			 */
-			socket.on('draftName', data => {
+			socket.on('setName', data => {
 				App.Data.name = data;
 
 				//Adjust title
@@ -87,6 +97,7 @@
 		 * @since 0.6.0
 		 */
 		function init() {
+			sendId();
 		}
 
 		/**
@@ -96,7 +107,7 @@
 		 * @since 0.6.0
 		 */
 		function setDraftName(draftName) {
-			socket.emit('draftName', {draftName});
+			socket.emit('setName', {draftName});
 		}
 
 		/**
@@ -137,6 +148,16 @@
 		 */
 		function updateScore(scores) {
 			socket.emit('updateScore', scores);
+		}
+
+		/**
+		 * Sends the ID of the draft to the server
+		 *
+		 * @author mauricio.araldi
+		 * @since 0.8.0
+		 */
+		function sendId() {
+			socket.emit('id', { id: location.search.slice(location.search.indexOf('id') + 3, location.search.length) });
 		}
 
 		return {

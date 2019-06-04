@@ -7,15 +7,15 @@ const router = express.Router();
  * Server Route
  *
  * @author mauricio.araldi
- * @since 0.6.0
+ * @since 0.8.0
  *
- * @path /server/
+ * @path /counter/
  */
 router.get('/', (req, res) => {
-	let html = fs.readFileSync(__dirname + '/../../public/counter.html');
+	const html = fs.readFileSync(__dirname + '/../../public/counter.html');
 
 	res.writeHead(200, {
-		"Content-Type" : 'text/html'
+		'Content-Type' : 'text/html'
 	});
 
 	res.write(html);
