@@ -10,32 +10,27 @@
 ***************************************************************
 **************************************************************/
 
-/////////////
-// Imports //
-/////////////
 import express from 'express';
 import session from 'express-session';
 import fs from 'fs';
 import bodyParser from 'body-parser';
 import socketIo from 'socket.io';
 
-import counterSocket from './counterSocket';
-import serverSocket from './serverSocket';
+import counterSocket from './sockets/counter';
+import serverSocket from './sockets/server';
 
-////////////
-//Globals //
-////////////
+/////////////
+// Globals //
+/////////////
 const KEY = 'express.sid';
 const SECRET = 'D54F7C0N750L';
+
 global.app = express();
 
-global.Draft = {
-	name: '',
-	tournament: {},
-	players: {}
-};
+global.Drafts = {};
+
 global.Configs = {
-	autosaveTime: 60000 //1 minute
+	autoSaveTime: 60000
 }
 
 /////////////
@@ -60,39 +55,36 @@ const sessionStore = session({
 //////////
 
 // Load games
-fs.readFile('draft.json', 'UTF-8', (err, data) => {
-	if (err) {return console.error(err)};
+fs.readFile('data.json', 'UTF-8', (err, data) => {
+	if (err) { return console.error(err) };
 
-	Draft = data ? JSON.parse(data) : Draft;
+	Drafts = data ? JSON.parse(data) : Drafts;
 
-	console.log('Draft loaded.');
+	console.log('Drafts loaded.');
 });
 
-global.io = socketIo.listen(
-	app.listen(3000, () => {
-		console.log('\n- - - Server running - - -\n');
-	})
-);
+// Starts server
+global.io = socketIo.listen(app.listen(80, () => console.log('\n- - - Server running - - -\n')));
 
 // Set ession store on Express
 app.use(sessionStore);
 
 // Set session store on Socket.io
-io.use(function(socket, next) {sessionStore(socket.request, socket.request.res, next)});
+io.use((socket, next) => sessionStore(socket.request, socket.request.res, next));
 
 // Routing
 require('./routes');
 
-// Initialize game socket
-io.of('/game').on('connection', counterSocket);
+// Initialize counter socket
+io.of('/counter').on('connection', counterSocket);
 
 // Initialize server socket
 io.of('/server').on('connection', serverSocket);
 
 // Save Games automatically
-setInterval(function() {
-	fs.writeFile('draft.json', JSON.stringify(Draft), err => {
-		if (err) {return log.error(err)};
-		console.log('Draft saved.');
+setInterval(() => {
+	fs.writeFile('data.json', JSON.stringify(Drafts), err => {
+		if (err) { return log.error(err) };
+		console.log('Drafts saved.');
 	});
-}, Configs.autosaveTime);
+}, Configs.autoSaveTime);

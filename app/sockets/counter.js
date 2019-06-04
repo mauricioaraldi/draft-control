@@ -6,9 +6,7 @@
  * @socket /
  */
 export default socket => {
-	var session = socket.request.session;
-
-	console.log('Counter connected');
+	const session = socket.request.session;
 
 	/**
 	 * When players are requested
@@ -17,7 +15,7 @@ export default socket => {
 	 * @since 0.6.0
 	 */
 	socket.on('players', data => {
-		socket.emit('players', {players: Draft.players});
+		socket.emit('players', { players: Draft.players });
 	});
 
 	/**
@@ -28,10 +26,10 @@ export default socket => {
 	 */
 	socket.on('endGame', data => {
 		//Updates winner score
-		Draft.tournament[data.winner][data.loser]['matchesWon']++;
+		Drafts.tournament[data.winner][data.loser]['matchesWon']++;
 		
 		//Updates loser score
-		Draft.tournament[data.loser][data.winner]['matchesLost']++;
+		Drafts.tournament[data.loser][data.winner]['matchesLost']++;
 
 		io.of('/server').emit('tournament', Draft.tournament);
 	});

@@ -1,5 +1,5 @@
 # Draft Control
-### Current version: 0.7.0
+### Current version: 0.8.0
 
 System used to manage TCG drafts. Born to be used by me and my friends.
 

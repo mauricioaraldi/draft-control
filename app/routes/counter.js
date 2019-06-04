@@ -12,7 +12,7 @@ const router = express.Router();
  * @path /server/
  */
 router.get('/', (req, res) => {
-	let html = fs.readFileSync(__dirname + '/../../public/server.html');
+	let html = fs.readFileSync(__dirname + '/../../public/counter.html');
 
 	res.writeHead(200, {
 		"Content-Type" : 'text/html'

@@ -1,4 +1,4 @@
-import Player from './../public/resources/js/objects/Player.js';
+import Player from '../objects/Player';
 
 /**
  * Server socket
@@ -8,9 +8,7 @@ import Player from './../public/resources/js/objects/Player.js';
  * @socket /server
  */
 export default socket => {
-	var session = socket.request.session;
-
-	console.log('Server connected');
+	const session = socket.request.session;
 
 	/**
 	 * On changing draft name
