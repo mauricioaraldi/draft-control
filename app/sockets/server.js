@@ -26,6 +26,8 @@ export default socket => {
 		if (!draft) {
 			socket.emit('draftUnavailable');
 		}
+
+		socket.emit('draftData', draft);
 	});
 
 	/**
