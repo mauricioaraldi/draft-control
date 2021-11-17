@@ -16,7 +16,6 @@ export default socket => {
 	 * @since 0.6.0
 	 */
 	socket.on('players', data => {
-        console.log(CurrentDraft);
         if(!CurrentDraft){
             socket.emit('noGame','');
         }

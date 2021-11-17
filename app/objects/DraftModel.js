@@ -4,7 +4,7 @@ export default class DraftModel {
 		this.name = name;
 		this.games = games;
 		this.players = players;
-        this.Values = {
+        this.values = {
 			currentTime: 0,
 			draftTimer: 0,
 			roundsLeft: 0,

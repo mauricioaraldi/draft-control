@@ -155,7 +155,7 @@
                      */
                     $(document).on('playersLoaded', ev => {
                         sortPlayerPlaces();
-                        App.Data.Values.currentOrientation = 'Right';
+                        App.Data.values.currentOrientation = 'Right';
 
                         changeScreen('timer');
 
@@ -177,15 +177,15 @@
 				var rounds = parseInt($('#round-number').val()),
 					time = Math.ceil(rounds * App.Config.draftRoundTime);
 
-				App.Data.Values.roundsLeft = rounds;
-				App.Data.Values.draftTimer = time;
-				App.Data.Values.currentTime = time;
+				App.Data.values.roundsLeft = rounds;
+				App.Data.values.draftTimer = time;
+				App.Data.values.currentTime = time;
 
 				changeScreen('startTimer');
 
-				$('#clock').text( App.Data.Values.draftTimer );
-				$('#rounds-left-timer').text( App.Data.Values.roundsLeft );
-				$('#rounds-orientation').text( App.Data.Values.currentOrientation );
+				$('#clock').text( App.Data.values.draftTimer );
+				$('#rounds-left-timer').text( App.Data.values.roundsLeft );
+				$('#rounds-orientation').text( App.Data.values.currentOrientation );
 			});
 
 			/**
@@ -201,10 +201,10 @@
 					changeScreen('timerRunning');
 
 					decreaser = setInterval(function() {
-						$('#clock').text( --App.Data.Values.currentTime );
-						timeIndicatorSound(App.Data.Values.currentTime);
+						$('#clock').text( --App.Data.values.currentTime );
+						timeIndicatorSound(App.Data.values.currentTime);
 
-						if (App.Data.Values.currentTime == 0) {
+						if (App.Data.values.currentTime == 0) {
 							clearInterval(decreaser);
 
 							$('#alarm-clock-sound')[0].play();
@@ -229,21 +229,21 @@
 
 				changeScreen('startTimer');
 
-				App.Data.Values.draftTimer -= Math.floor(App.Data.Values.draftTimer / App.Data.Values.roundsLeft);
+				App.Data.values.draftTimer -= Math.floor(App.Data.values.draftTimer / App.Data.values.roundsLeft);
 
-				if (App.Data.Values.roundsLeft > App.Config.majorRoundTimeMax) {
-					App.Data.Values.draftTimer -= App.Config.majorRoundTimeDecrease;
-				} else if (App.Data.Values.roundsLeft > App.Config.minorRoundTimeMax) {
-					App.Data.Values.draftTimer -= App.Config.minorRoundTimeDecrease;
+				if (App.Data.values.roundsLeft > App.Config.majorRoundTimeMax) {
+					App.Data.values.draftTimer -= App.Config.majorRoundTimeDecrease;
+				} else if (App.Data.values.roundsLeft > App.Config.minorRoundTimeMax) {
+					App.Data.values.draftTimer -= App.Config.minorRoundTimeDecrease;
 				}
 
-				App.Data.Values.currentTime = App.Data.Values.draftTimer;
+				App.Data.values.currentTime = App.Data.values.draftTimer;
 
-				$('#clock').text(App.Data.Values.currentTime);
-				$('#rounds-left-timer').text( --App.Data.Values.roundsLeft );
-				$('#rounds-orientation').text( App.Data.Values.currentOrientation );
+				$('#clock').text(App.Data.values.currentTime);
+				$('#rounds-left-timer').text( --App.Data.values.roundsLeft );
+				$('#rounds-orientation').text( App.Data.values.currentOrientation );
 
-				if (App.Data.Values.roundsLeft == 0) {
+				if (App.Data.values.roundsLeft == 0) {
 					$(document).trigger('draft-timer-finished');
 					return;
 				}
@@ -256,7 +256,7 @@
 			 * @since 0.5.0
 			 */
 			$('#new-draft-round').on('click', ev => {
-				App.Data.Values.currentOrientation = App.Data.Values.currentOrientation == 'Right' ? 'Left' : 'Right';
+				App.Data.values.currentOrientation = App.Data.values.currentOrientation == 'Right' ? 'Left' : 'Right';
 				changeScreen('newDraftRound');
 			});
 
