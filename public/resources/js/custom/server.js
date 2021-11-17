@@ -66,26 +66,31 @@
 			 */
 			$('#submit-player-names').on('click', ev => {
 				ev.preventDefault();
+                if($('#player-names input').filter(function() { return ($(this).val().length > 0)}).length >1){
 
-				setLoading(true);
+                    setLoading(true);
 
-				try {
-					buildPlayers();
-				} catch (error) {
-					return App.Utils.errorPopup(error);
-				}
+                    try {
+                        buildPlayers();
+                    } catch (error) {
+                        return App.Utils.errorPopup(error);
+                    }
 
-				/**
-				 * When players are loaded, build tournament tables
-				 */
-				$(document).on('playersLoaded', ev => {
-					changeScreen('table');
-				
-					//Build Tournament
-					App.Sockets.Server.getTournamentTable();
+                    /**
+                     * When players are loaded, build tournament tables
+                     */
+                    $(document).on('playersLoaded', ev => {
+                        changeScreen('table');
+                    
+                        //Build Tournament
+                        App.Sockets.Server.getTournamentTable();
 
-					setLoading(false);
-				});
+                        setLoading(false);
+                    });
+                }
+                else{
+                    App.Utils.errorPopup("Please input at least 2 non-empty player names.");
+                }
 			});
 			
 			/**
@@ -121,19 +126,13 @@
 			});
 	
 			/**
-			 * Upon clicking load, bring scores from localStorage
+			 * Return to home screen
 			 *
-			 * @author mauricio.araldi
-			 * @since 0.6.0
+			 * @author mauricio.fiorest
+			 * @since 0.9.0
 			 */
-			$('#load').on('click', ev => {
-				ev.preventDefault();
-				setLoading(true);
-
-				App.Sockets.Server.loadGame();
-
-				changeScreen('table');
-				setLoading(false);
+			$('#home').on('click', ev => {
+                location.href = "/server";
 			});
 
 			/**
@@ -143,23 +142,29 @@
 			 * @since 0.5.0
 			 */
 			$('#enter-draft-timer').on('click', ev => {
-				try {
-					buildPlayers();
-				} catch (error) {
-					return App.Utils.errorPopup(error);
-				}
+                if($('#player-names input').filter(function() { return ($(this).val().length > 0)}).length >1){
 
-				/**
-				 * Once players are loaded
-				 */
-				$(document).on('playersLoaded', ev => {
-					sortPlayerPlaces();
-					App.Data.Values.currentOrientation = 'Right';
+                    try {
+                        buildPlayers();
+                    } catch (error) {
+                        return App.Utils.errorPopup(error);
+                    }
 
-					changeScreen('timer');
+                    /**
+                     * Once players are loaded
+                     */
+                    $(document).on('playersLoaded', ev => {
+                        sortPlayerPlaces();
+                        App.Data.Values.currentOrientation = 'Right';
 
-					setLoading(false);
-				});
+                        changeScreen('timer');
+
+                        setLoading(false);
+                    });
+                }
+                else{
+                    App.Utils.errorPopup("Please input at least 2 non-empty player names.");
+                }
 			});
 
 			/**
@@ -287,6 +292,35 @@
 		 */
 		function init() {
 			changeScreen('draftName');
+		}
+        
+        /**
+		 * Draws the player form
+		 *
+		 * @public
+		 * @author mauricio.fiorest
+		 * @since 0.9.0
+		 */
+		function initPlayers(playersData) {
+			changeScreen('players');
+            if($('#player-inputs input').length==0){
+                createPlayerInput();
+            }
+		}
+
+        /**
+		 * Loads previously saved data if exists
+		 *
+		 * @public
+		 * @author mauricio.fiorest
+		 * @since 0.9.0
+		 */
+		function load() {
+            setLoading(true);
+
+            App.Sockets.Server.loadGame();
+            
+            setLoading(false);
 		}
 
 		/**
@@ -517,6 +551,7 @@
 		 * @since 0.6.0
 		 */
 		function drawTournamentTable() {
+            changeScreen("table");
 			$('#tables').empty();
 
 			getPlayersInOrder().forEach(function(player, index) {
@@ -731,6 +766,8 @@
 			bindEvents,
 			drawSuggestedMatches,
 			drawTournamentTable,
+            initPlayers,
+            load,
 			init
 		}
 	})();
@@ -738,6 +775,6 @@
 	//DOM Ready -- initializes the module
 	$(() => {
 		App.server.bindEvents();
-		App.server.init();
+		App.server.load();
 	});
 })(jQuery, window);

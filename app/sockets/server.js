@@ -1,5 +1,5 @@
-import Draft from '../Draft';
-import PlayerModel from '../objects/PlayerModel';
+import Draft from '../Draft.js';
+import PlayerModel from '../objects/PlayerModel.js';
 
 /**
  * Server socket
@@ -38,7 +38,7 @@ export default socket => {
 	 */
 	socket.on('setName', data => {
 		draft = Draft.setName(draft.id, data.draftName);
-		socket.emit('setName', draft.name);
+		socket.emit('setName', draft);
 	});
 
 	/**
@@ -62,8 +62,11 @@ export default socket => {
 	 * @since  0.6.0
 	 */
 	socket.on('loadGame', data => {
-		// socket.emit('loadGame', Draft);
-		// socket.emit('suggestedMatches', buildSuggestedMatches());
+        draft = Draft.get(draft.id);
+		socket.emit('loadGame', draft);
+        if(draft.tournament){
+            socket.emit('suggestedMatches', Draft.buildSuggestedMatches(draft.id));
+        }
 	});
 
 	/**

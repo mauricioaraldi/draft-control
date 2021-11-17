@@ -87,7 +87,7 @@
 			 * @since 0.7.0
 			 */
 			$('#dieMenu > button').on('click', ev => {
-				let sides = parseInt($(this).text()),
+				let sides = parseInt($(ev.target).text()),
 					randomNumber = Math.floor(Math.random() * sides) + 1;
     			
     			alert(randomNumber);
@@ -238,13 +238,16 @@
 			 * @since 0.7.0
 			 */
 			$('.undo').on('click', ev => {
+                
 				let playerEl = $(ev.target).closest('.player'),
 					lastHpEl = playerEl.find('.history > div > span:last'),
 					lastHpValue = lastHpEl.text().replace('-', '').replace('+', '-');
 
-				lastHpEl.remove();
+                if(lastHpEl.length>0){
+                    lastHpEl.remove();
 
-				addPlayerHp(playerEl, parseInt(lastHpValue), true);
+                    addPlayerHp(playerEl, parseInt(lastHpValue), true);
+                }
 			});
 		}
 
@@ -324,10 +327,22 @@
 				);
 			});
 		}
+        
+        /**
+		 * Issues the no Game warning
+		 *
+		 * @public
+		 * @author mauricio.fiorest
+		 * @since 0.9.0
+		 */
+		function drawNoGame() {
+			$("#NoGame").show();
+		}
 
 		return {
 			bindEvents,
 			drawPlayers,
+            drawNoGame,
 			init
 		}
 	})();
