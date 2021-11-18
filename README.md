@@ -20,3 +20,4 @@ No results are guaranteed. Use this software at your own risk.
 
 ## Contributors
 - Mauricio Araldi, [@mauricioaraldi](https://github.com/mauricioaraldi/)
+- Mauricio Fiorest, [@mauriciobfiorest](https://github.com/mauriciobfiorest/)
