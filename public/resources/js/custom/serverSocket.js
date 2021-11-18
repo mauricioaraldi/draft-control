@@ -44,10 +44,11 @@
 			 * @since 0.6.0
 			 */
 			socket.on('setName', data => {
-				App.Data.name = data;
+				App.Data = data;
 
 				//Adjust title
 				$('h1').text(App.Data.name);
+                $('h3').text(new Date(App.Data.date).toLocaleDateString('pt-BR')).show();
 			});
 
 			/**
@@ -59,11 +60,21 @@
 			socket.on('loadGame', data => {
 				App.Data = data;
 
-				//Adjust title
-				$('h1').text(App.Data.name);
-
-				//Build tournament
-				App.server.drawTournamentTable();
+                if(App.Data.name){
+                    //Adjust title
+                    $('h1').text(App.Data.name);
+                    $('h3').text(new Date(App.Data.date).toLocaleDateString('pt-BR')).show();
+                    if(App.Data.players && App.Data.tournament){
+                        //Build tournament
+                        App.server.drawTournamentTable();
+                    }
+                    else{
+                        App.server.initPlayers(App.Data.players);
+                    }
+                }
+                else{
+                    App.server.init();
+                }
 			});
 
 			/**

@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
-import DraftModel from './objects/DraftModel';
-import PlayerModel from './objects/PlayerModel';
+import DraftModel from './objects/DraftModel.js';
+import PlayerModel from './objects/PlayerModel.js';
 
 /**
  * Manages data and flows about drafts
@@ -52,7 +52,7 @@ export default class Draft {
 		if (!id) {
 			throw new Error('An id is required to retrieve a draft from register.');
 		}
-
+        CurrentDraft=id;
 		return Drafts[id];
 	}
 
@@ -80,6 +80,7 @@ export default class Draft {
 		}
 
 		Drafts[id].name = name;
+        Drafts[id].date = new Date();
 
 		return Drafts[id];
 	}

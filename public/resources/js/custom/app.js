@@ -20,7 +20,7 @@
 	Data: {
 		name: '',
 
-		Values: {
+		values: {
 			currentTime: 0,
 			draftTimer: 0,
 			roundsLeft: 0,

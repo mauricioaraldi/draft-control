@@ -16,8 +16,9 @@ import fs from 'fs';
 import bodyParser from 'body-parser';
 import socketIo from 'socket.io';
 
-import counterSocket from './sockets/counter';
-import serverSocket from './sockets/server';
+import counterSocket from './sockets/counter.js';
+import serverSocket from './sockets/server.js';
+import serverSocketHome from './sockets/serverHome.js';
 
 /////////////
 // Globals //
@@ -28,6 +29,7 @@ const SECRET = 'D54F7C0N750L';
 global.app = express();
 
 global.Drafts = {};
+global.CurrentDraft  = '';
 
 global.Configs = {
 	autoSaveTime: 60000
@@ -36,7 +38,9 @@ global.Configs = {
 /////////////
 // Configs //
 /////////////
-app.use(express.static(__dirname + '/../public'));
+import path from 'path';
+const __dirname = path.resolve();
+app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.set('trust proxy', 1);
@@ -73,7 +77,7 @@ app.use(sessionStore);
 io.use((socket, next) => sessionStore(socket.request, socket.request.res, next));
 
 // Routing
-require('./routes');
+import('./routes.js');
 
 // Initialize counter socket
 io.of('/counter').on('connection', counterSocket);
@@ -81,9 +85,20 @@ io.of('/counter').on('connection', counterSocket);
 // Initialize server socket
 io.of('/server').on('connection', serverSocket);
 
+// Initialize server home socket
+io.of('/serverHome').on('connection', serverSocketHome);
+
 // Save Games automatically
 setInterval(() => {
-	fs.writeFile('data.json', JSON.stringify(Drafts), err => {
+    //prevent empty draft save
+    var tempDraft = {};
+    for (var draft in Drafts) {
+        if(Drafts[draft].name){
+            tempDraft[draft]= Drafts[draft];
+        }
+    }
+    ////---<
+	fs.writeFile('data.json', JSON.stringify(tempDraft), err => {
 		if (err) { return log.error(err) };
 		console.log('Drafts saved.');
 	});

@@ -14,6 +14,18 @@ header {
 	top: 0px;
 }
 
+header > div {
+    display: inline-block;
+}
+#draftName {
+	color: #EAC117;
+	font-size: 1em;
+	margin: 0 0 0 0;
+    padding-left: 2rem;
+	text-align: center;
+	text-shadow: 1px 1px 1px #000000;
+}
+
 header > button {
 	background-color: #FFFFFF;
 	border: none;
@@ -65,7 +77,7 @@ select {
 	top: 98px;
 }
 
-.buttons {
+.buttons{
 	border-bottom: 1px solid #CCCCCC;
 	border-top: 1px solid #CCCCCC;
 	display: grid;
@@ -121,7 +133,8 @@ select {
 
 #whoWonMenu, 
 #menu,
-#dieMenu {
+#dieMenu,
+#NoGame {
 	background-color: #FFFFFF;
 	bottom: 0;
 	display: none;

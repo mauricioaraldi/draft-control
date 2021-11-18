@@ -9,9 +9,24 @@
 h1 {
 	color: #EAC117;
 	font-size: 70px;
-	margin: 0 0 1rem 0;
+	margin: 0 0 -1rem 0;
 	text-align: center;
 	text-shadow: 1px 1px 1px #000000;
+}
+
+h3 {
+	color: #EAC117;
+	font-size: 40px;
+	margin: 0 0 0 0;
+	text-align: center;
+	text-shadow: 1px 1px 1px #000000;
+}
+
+select {
+	background-color: transparent;
+	padding: .5rem;
+	width: 369px;
+	text-align: center;
 }
 
 #player-inputs {

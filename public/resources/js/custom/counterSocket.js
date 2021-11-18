@@ -7,7 +7,7 @@
 	 * @since 0.6.0
 	 */
 	App.Sockets.counter = (() => {
-		var socket = io.connect('/game');
+		var socket = io.connect('/counter');
 
 		/**
 		 * Default function with all event bindings related to this module
@@ -23,7 +23,18 @@
 			 * @since 0.6.0
 			 */
 			socket.on('players', data => {
-				App.counter.drawPlayers(data.players);
+                $("#draftName").text(data.draft.name);
+				App.counter.drawPlayers(data.draft.players);
+			});
+            
+			/**
+			 * On receiving no game warning
+			 *
+			 * @author mauricio.fiorest
+			 * @since 0.9.0
+			 */
+			socket.on('noGame', data => {
+				App.counter.drawNoGame();
 			});
 		}
 
