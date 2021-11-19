@@ -1,0 +1,18 @@
+.container {
+  background-color: var(--color-white);
+  bottom: 0;
+  display: none;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.container.open {
+  display: block;
+}
+
+.header {
+  background-color: var(--color-gray-20);
+  height: 40px;
+}
