@@ -1,7 +1,14 @@
+/* Icons */
+import { MdClose } from 'react-icons/md';
+
+/* Own components */
+import Button from 'components/atoms/button/button';
+
+/* Styles */
 import styles from './modalMenu.module.css';
 
 function ModalMenu(props) {
-  const { children, isOpen, title } = props;
+  const { children, isOpen, onClose, title } = props;
   const containerClasses = [styles.container];
 
   if (isOpen) {
@@ -17,10 +24,12 @@ function ModalMenu(props) {
             : null
         }
 
-        <button>X</button>
+        <Button onClick={onClose}><MdClose /></Button>
       </header>
 
-      { children }
+      <div className={styles.content}>
+        { children }
+      </div>
     </aside>
   );
 }

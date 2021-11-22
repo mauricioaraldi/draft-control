@@ -1,15 +1,23 @@
+/* Third party */
 import { useState } from 'react';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 
-import Button from 'components/button/button';
-import ModalMenu from 'components/modalMenu/modalMenu';
+/* Icons */
+import { MdMenu } from 'react-icons/md';
+import { GiInvertedDice5 } from 'react-icons/gi'
 
+/* Own components */
+import Button from 'components/atoms/button/button';
+import LanguageSelect from 'components/molecules/languageSelect/languageSelect';
+import ModalMenu from 'components/organisms/modalMenu/modalMenu';
+
+/* Styles */
 import styles from 'styles/counter.module.css';
 
 export default function Counter() {
-  const { t } = useTranslation('common');
-  const draftName = '';
+  const { t } = useTranslation('counter');
+  const draftName = 'Draft Name that is very long';
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDieMenuOpen, setIsDieMenuOpen] = useState(false);
 
@@ -24,19 +32,20 @@ export default function Counter() {
   return (
     <>
       <header className={styles.header}>
-        <Button onClick={toggleMenu}>M</Button>
-        <Button onClick={toggleDieMenu}>D</Button>
+        <Button onClick={toggleMenu}><MdMenu /></Button>
         <h1>{ draftName }</h1>
+        <Button onClick={toggleDieMenu}><GiInvertedDice5 /></Button>
       </header>
 
-      <ModalMenu isOpen={isMenuOpen}>
-        <Button class="button" id="endGame">End game</Button>
-        <Button class="button" id="reset">Reset</Button>
-        <Button class="button" id="closeMenu">Close</Button>
+      <ModalMenu isOpen={isMenuOpen} onClose={toggleMenu}>
+        <Button class="button" id="endGame">{ t('endGame') }</Button>
+        <Button class="button" id="reset">{ t('reset') }</Button>
+
+        <LanguageSelect className={styles.languageSelect} />
       </ModalMenu>
 
-      <ModalMenu isOpen={isDieMenuOpen}>
-        <h1>Sides</h1>
+      <ModalMenu isOpen={isDieMenuOpen} onClose={toggleDieMenu}>
+        <h1>{ t('sides') }</h1>
         <Button class="button">10</Button>
         <Button class="button">20</Button>
       </ModalMenu>
@@ -47,7 +56,7 @@ export default function Counter() {
 export async function getStaticProps({ locale }) {
   return {
     props: {
-      ...(await serverSideTranslations(locale, ['counter'])),
+      ...(await serverSideTranslations(locale, ['counter', 'language'])),
     },
   };
 }

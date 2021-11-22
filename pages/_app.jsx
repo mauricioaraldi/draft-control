@@ -1,5 +1,7 @@
+/* Third party */
 import { appWithTranslation } from 'next-i18next';
 
+/* Styles */
 import 'styles/globals.css';
 
 function MyApp({ Component, pageProps }) {

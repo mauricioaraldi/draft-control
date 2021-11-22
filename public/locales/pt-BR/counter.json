@@ -1,3 +1,5 @@
 {
-  "Test": "test",
+  "endGame": "Finalizar jogo",
+  "reset": "Reiniciar",
+  "sides": "Lados"
 }

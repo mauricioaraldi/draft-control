@@ -14,5 +14,16 @@
 
 .header {
   background-color: var(--color-gray-20);
-  height: 40px;
+}
+
+.header > button {
+  display: block;
+  margin-left: auto;
+}
+
+.content {
+  align-content: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }

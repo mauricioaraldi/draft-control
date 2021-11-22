@@ -9,8 +9,19 @@
 
 .header > h1 {
   color: var(--color-primary);
-  font-size: var(--font-size-s);
+  font-size: var(--font-size-m);
   margin: auto;
-  padding: 0;
+  overflow: hidden;
+  padding: 0 var(--size-s);
+  text-overflow: ellipsis;
   text-shadow: 1px 1px 1px var(--color-black);
+  white-space: nowrap;
+}
+
+.languageSelect {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
 }
