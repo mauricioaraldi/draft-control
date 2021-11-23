@@ -1,0 +1,48 @@
+.container {
+  flex: 1;
+}
+
+.name {
+  cursor: pointer;
+  width: 100%;
+}
+
+.hp {
+  cursor: ns-resize;
+  display: block;
+  font-size: 90px;
+  line-height: 70px;
+  overflow: hidden;
+  text-align: center;
+
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+}
+
+.undo {
+  float: right;
+  line-height: 0;
+  margin-top: -22px;
+  padding: var(--size-xs);
+}
+
+.undo > svg {
+  height: 12px;
+  width: 12px;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.history {
+  overflow: auto;
+}
+
+.history > span {
+  display: block;
+  padding: var(--size-xs) 0;
+  text-align: center;
+}

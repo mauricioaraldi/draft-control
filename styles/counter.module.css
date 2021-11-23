@@ -1,10 +1,11 @@
 .header {
+  background-color: var(--color-gray-98);
   border-bottom: 1px solid var(--color-gray-50);
   display: flex;
   left: 0;
   position: fixed;
   right: 0;
-  top: 0px;
+  top: 0;
 }
 
 .header > h1 {
@@ -16,6 +17,15 @@
   text-overflow: ellipsis;
   text-shadow: 1px 1px 1px var(--color-black);
   white-space: nowrap;
+}
+
+.counters {
+  display: flex;
+  margin-top: 46px;
+}
+
+.firstPlayer {
+  border-right: 1px solid var(--color-black);
 }
 
 .languageSelect {

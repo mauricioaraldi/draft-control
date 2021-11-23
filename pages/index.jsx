@@ -11,6 +11,7 @@ import { GiInvertedDice5 } from 'react-icons/gi'
 import Button from 'components/atoms/button/button';
 import LanguageSelect from 'components/molecules/languageSelect/languageSelect';
 import ModalMenu from 'components/organisms/modalMenu/modalMenu';
+import PlayerCounter from 'components/organisms/playerCounter/playerCounter';
 
 /* Styles */
 import styles from 'styles/counter.module.css';
@@ -18,6 +19,20 @@ import styles from 'styles/counter.module.css';
 export default function Counter() {
   const { t } = useTranslation('counter');
   const draftName = 'Draft Name that is very long';
+  const players = [
+    {
+      id: 1,
+      name: 'Player 1',
+    },
+    {
+      id: 2,
+      name: 'Player 2',
+    },
+    {
+      id: 3,
+      name: 'Player 3',
+    }
+  ];
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDieMenuOpen, setIsDieMenuOpen] = useState(false);
 
@@ -29,6 +44,14 @@ export default function Counter() {
     setIsDieMenuOpen(!isDieMenuOpen);
   };
 
+  const rollDie = sides => {
+    let randomNumber = Math.floor(Math.random() * sides) + 1;
+
+    setIsDieMenuOpen(false);
+
+    alert(randomNumber);
+  };
+
   return (
     <>
       <header className={styles.header}>
@@ -37,19 +60,23 @@ export default function Counter() {
         <Button onClick={toggleDieMenu}><GiInvertedDice5 /></Button>
       </header>
 
+      <main className={styles.counters}>
+        <PlayerCounter className={styles.firstPlayer} players={players} />
+        <PlayerCounter players={players} />
+      </main>
+
       <ModalMenu isOpen={isMenuOpen} onClose={toggleMenu}>
-        <Button class="button" id="endGame">{ t('endGame') }</Button>
-        <Button class="button" id="reset">{ t('reset') }</Button>
+        <Button id="endGame">{ t('endGame') }</Button>
+        <Button id="reset">{ t('reset') }</Button>
 
         <LanguageSelect className={styles.languageSelect} />
       </ModalMenu>
 
-      <ModalMenu isOpen={isDieMenuOpen} onClose={toggleDieMenu}>
-        <h1>{ t('sides') }</h1>
-        <Button class="button">10</Button>
-        <Button class="button">20</Button>
+      <ModalMenu isOpen={isDieMenuOpen} onClose={toggleDieMenu} title={t('sides')}>
+        <Button onClick={() => rollDie(10)}>10</Button>
+        <Button onClick={() => rollDie(20)}>20</Button>
       </ModalMenu>
-      </>
+    </>
   );
 }
 

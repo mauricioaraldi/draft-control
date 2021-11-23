@@ -1,5 +1,5 @@
 .container {
-  background-color: var(--color-white);
+  background-color: var(--color-gray-98);
   bottom: 0;
   display: none;
   left: 0;
@@ -13,12 +13,21 @@
 }
 
 .header {
+  align-items: center;
   background-color: var(--color-gray-20);
+  color: var(--color-gray-98);
+  display: flex;
+  justify-content: flex-end;
+  text-shadow: 1px 1px 1px black;
+}
+
+.header > h1 {
+  font-weight: normal;
+  margin: 0 auto;
 }
 
 .header > button {
   display: block;
-  margin-left: auto;
 }
 
 .content {
