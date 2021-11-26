@@ -1,16 +1,18 @@
 .container {
+  display: flex;
   flex: 1;
+  flex-direction: column;
 }
 
 .name {
   cursor: pointer;
-  width: 100%;
 }
 
 .hp {
   cursor: ns-resize;
   display: block;
   font-size: 90px;
+  height: 210px;
   line-height: 70px;
   overflow: hidden;
   text-align: center;
@@ -21,9 +23,9 @@
 }
 
 .undo {
-  float: right;
+  align-self: flex-end;
   line-height: 0;
-  margin-top: -22px;
+  margin-top: -36px;
   padding: var(--size-xs);
 }
 
@@ -38,6 +40,7 @@
 }
 
 .history {
+  height: 100%;
   overflow: auto;
 }
 

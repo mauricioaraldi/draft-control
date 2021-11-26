@@ -33,6 +33,9 @@
   --breakpoint-l: 1280px;
   --breakpoint-xl: 1440px;
   --breakpoint-xxl: 1680px;
+
+  /* General */
+  --counters-header-height: 46px;
 }
 
 @font-face {
