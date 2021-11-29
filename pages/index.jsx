@@ -52,6 +52,16 @@ export default function Counter() {
     alert(randomNumber);
   };
 
+  const confirmReset = () => {
+    const resetConfirmed = confirm(t('areYouSureReset'));
+
+    if (!resetConfirmed) {
+      return;
+    }
+
+    setIsMenuOpen(false);
+  };
+
   return (
     <>
       <header className={styles.header}>
@@ -67,7 +77,7 @@ export default function Counter() {
 
       <ModalMenu isOpen={isMenuOpen} onClose={toggleMenu}>
         <Button id="endGame">{ t('endGame') }</Button>
-        <Button id="reset">{ t('reset') }</Button>
+        <Button id="reset" onClick={confirmReset}>{ t('reset') }</Button>
 
         <LanguageSelect className={styles.languageSelect} />
       </ModalMenu>
