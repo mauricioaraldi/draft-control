@@ -35,6 +35,7 @@ export default function Counter() {
   ];
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDieMenuOpen, setIsDieMenuOpen] = useState(false);
+  const [startGameTime, setStartGameTime] = useState(0);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -60,6 +61,7 @@ export default function Counter() {
     }
 
     setIsMenuOpen(false);
+    setStartGameTime(new Date().getTime());
   };
 
   return (
@@ -71,8 +73,8 @@ export default function Counter() {
       </header>
 
       <main className={styles.counters}>
-        <PlayerCounter className={styles.firstPlayer} players={players} />
-        <PlayerCounter players={players} />
+        <PlayerCounter key={`${startGameTime}_1`} className={styles.firstPlayer} players={players} />
+        <PlayerCounter key={`${startGameTime}_2`} players={players} />
       </main>
 
       <ModalMenu isOpen={isMenuOpen} onClose={toggleMenu}>

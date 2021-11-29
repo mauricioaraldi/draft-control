@@ -12,9 +12,9 @@ import { MdUndo } from 'react-icons/md';
 import styles from './playerCounter.module.css';
 
 function PlayerCounter(props) {
-  const { children, className, debounce = 400, hp = 20, players = [] } = props;
+  const { children, className, debounce = 400, initialHP = 20, players = [] } = props;
   const containerClasses = [styles.container];
-  const [currentHP, setCurrentHP] = useState(hp);
+  const [currentHP, setCurrentHP] = useState(initialHP);
   const [history, setHistory] = useState([]);
   const currentHPDelta = { hp: 0, time: 0 };
   const hpRef = useRef(null);
