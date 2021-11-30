@@ -8,6 +8,7 @@
   --color-gray-20: #333333;
 
   --color-primary: #EAC117;
+  --color-secondary: #82BDE8;
 
   /** Font sizes */
   --font-size-s: 1em;
@@ -35,7 +36,7 @@
   --breakpoint-xxl: 1680px;
 
   /* General */
-  --counters-header-height: 46px;
+  --header-height: 46px;
 }
 
 @font-face {

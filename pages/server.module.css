@@ -2,7 +2,7 @@
   background-color: var(--color-gray-98);
   border-bottom: 1px solid var(--color-gray-50);
   display: flex;
-  height: var(--counters-header-height);
+  height: var(--header-height);
   left: 0;
   position: fixed;
   right: 0;
@@ -20,20 +20,30 @@
   white-space: nowrap;
 }
 
-.counters {
-  display: flex;
-  height: calc(100vh - var(--counters-header-height));
-  margin-top: var(--header-height);
-}
-
-.firstPlayer {
-  border-right: 1px solid var(--color-black);
-}
-
 .languageSelect {
   bottom: 0;
   left: 0;
   position: absolute;
   right: 0;
   width: 100%;
+}
+
+.main {
+  display: flex;
+  flex-flow: column;
+  margin-top: var(--header-height);
+  padding: 0 var(--size-s);
+}
+
+.main > h2 {
+  color: var(--color-secondary);
+  font-size: var(--font-size-m);
+  margin: auto;
+  overflow: hidden;
+  padding: var(--size-xs) 0;
+  text-shadow: 1px 1px 0 var(--color-black);
+}
+
+.main > .secondTitle {
+  margin-top: var(--size-m);
 }

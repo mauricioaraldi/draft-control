@@ -33,6 +33,7 @@ export default function Counter() {
       name: 'Player 3',
     }
   ];
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDieMenuOpen, setIsDieMenuOpen] = useState(false);
   const [startGameTime, setStartGameTime] = useState(0);

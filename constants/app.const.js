@@ -1,0 +1,1 @@
+export const APP_NAME = 'Draft Control 0.10.0';
