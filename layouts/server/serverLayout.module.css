@@ -1,0 +1,6 @@
+.main {
+  display: flex;
+  flex-flow: column;
+  margin-top: var(--header-height);
+  padding: 0 var(--size-s);
+}

@@ -14,7 +14,7 @@ import ModalMenu from 'components/organisms/modalMenu/modalMenu';
 import PlayerCounter from 'components/organisms/playerCounter/playerCounter';
 
 /* Styles */
-import styles from './index.module.css';
+import styles from 'styles/counter.module.css';
 
 export default function Counter() {
   const { t } = useTranslation('counter');
