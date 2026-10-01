@@ -1,46 +1,53 @@
 ﻿<!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
     <title>Draft Control 0.10.0</title>
-
     <!-- Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
 
-    <!-- JS APIs -->
-    <script type="text/javascript" src="resources/js/api/jquery/jquery-3.3.1.min.js"></script>
+    <!-- JS libraries -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/noty/noty.min.js"></script>
 
-    <!-- JS CUSTOM -->
-    <script type="text/javascript" src="resources/js/custom/app.js"></script>
-    <script type="text/javascript" src="resources/js/custom/serverSocketHome.js"></script>
-    <script type="text/javascript" src="resources/js/custom/serverHome.js"></script>
+    <!-- JS custom -->
+    <script src="resources/js/custom/app.js"></script>
+    <script src="resources/js/custom/serverSocketHome.js"></script>
+    <script src="resources/js/custom/serverHome.js"></script>
 
-    <!-- CSS API -->
-    <link rel="stylesheet" href="resources/css/api/clearfix.css" />
-    <link rel="stylesheet" href="resources/css/api/normalize.css" />
+    <!-- CSS (same order as before: Noty styles load last) -->
+    <link href="resources/css/custom/clearfix.css" rel="stylesheet" />
+    <link href="/vendor/normalize/normalize.css" rel="stylesheet" />
+    <link href="resources/css/custom/index.css" rel="stylesheet" />
+    <link href="resources/css/custom/server.css" rel="stylesheet" />
+    <link href="/vendor/noty/themes/metroui.css" rel="stylesheet" />
+    <link href="/vendor/noty/noty.css" rel="stylesheet" />
 
-    <!-- CSS CUSTOM -->
-    <link rel="stylesheet" href="resources/css/custom/index.css" />
-    <link rel="stylesheet" href="resources/css/custom/server.css" />
+    <meta
+      content="Create a new draft or load a previous one in Draft Control."
+      name="description"
+    />
 
-    <!-- COMPLETE API -->
-    <link rel="stylesheet" href="resources/js/api/noty-3.1.3/themes/metroui.css" />
-    <link rel="stylesheet" href="resources/js/api/noty-3.1.3/noty.css" />
-    <script type="text/javascript" src="resources/js/api/noty-3.1.3/noty.min.js"></script>
+    <!-- Open Graph (link previews) -->
+    <meta content="Draft Control" property="og:title" />
+    <meta content="website" property="og:type" />
+    <meta content="/server" property="og:url" />
+    <meta content="/resources/images/og-image.png" property="og:image" />
   </head>
 
   <body>
     <h1>Draft Control 0.10.0</h1>
     <br />
 
-    <div class="page centered" id="draft-name">
-      <input placeholder="Insert draft name" />
-      <button class="button" id="submit-draft-name">Create New</button>
+    <div id="draft-name" class="page centered">
+      <input aria-label="Draft name" placeholder="Insert draft name" />
+      <button id="submit-draft-name" type="button" class="button">Create New</button>
     </div>
 
-    <div class="page centered" id="draft-load">
-      <select class="draft"></select>
-      <button class="button" id="load" href="#">Load</button>
+    <div id="draft-load" class="page centered">
+      <select class="draft" aria-label="Saved drafts"></select>
+      <button id="load" type="button" class="button" href="#">Load</button>
     </div>
   </body>
 </html>

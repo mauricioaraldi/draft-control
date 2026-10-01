@@ -6,7 +6,7 @@
    * @since 0.6.0
    */
   App.Sockets.counter = (() => {
-    var socket = io.connect('/counter');
+    const socket = io.connect('/counter');
 
     /**
      * Default function with all event bindings related to this module
@@ -63,6 +63,8 @@
      *
      * @author mauricio.araldi
      * @since 0.6.0
+     *
+     * @param {{winner: string, loser: string}} result Names of the winner and the loser of the game
      */
     function endGame(result) {
       socket.emit('endGame', result);

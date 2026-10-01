@@ -1,11 +1,14 @@
 /**
  * Counter controller
+ *
+ * @param {jQuery} $ The jQuery function
+ * @param {Window} window The browser window
  */
 (($, window) => {
   App.counter = (() => {
-    let moveDelta = 0,
-      playerBeingEdited = null,
-      lastScreenY = null;
+    let moveDelta = 0;
+    let playerBeingEdited = null;
+    let lastScreenY = null;
 
     /**
      * Default function that contains all event binds related to this module
@@ -22,8 +25,8 @@
        * @since 0.6.0
        */
       $('.buttons > button').on('click', (ev) => {
-        let value = parseInt($(ev.target).text()),
-          player = $(ev.target).closest('.player');
+        const value = Number($(ev.target).text());
+        const player = $(ev.target).closest('.player');
 
         addPlayerHp(player, value);
       });
@@ -87,10 +90,10 @@
        * @since 0.7.0
        */
       $('#dieMenu > button').on('click', (ev) => {
-        let sides = parseInt($(ev.target).text()),
-          randomNumber = Math.floor(Math.random() * sides) + 1;
+        const sides = Number($(ev.target).text());
+        const randomNumber = Math.floor(Math.random() * sides) + 1;
 
-        alert(randomNumber);
+        App.Utils.successPopup(`Rolled ${randomNumber}`);
 
         $('#dieMenu').toggle();
       });
@@ -125,20 +128,18 @@
        * @since 0.6.0
        */
       $(document).on('mousemove', (ev) => {
-        if (!App.Keys.mouseRight) {
+        if (!playerBeingEdited || !App.Keys.mouseRight) {
           return;
         }
 
-        if (playerBeingEdited) {
-          moveDelta += ev.originalEvent.movementY;
+        moveDelta += ev.originalEvent.movementY;
 
-          if (moveDelta > App.Config.addHpDelta) {
-            moveDelta -= App.Config.addHpDelta;
-            addPlayerHp(playerBeingEdited, -1);
-          } else if (moveDelta < -App.Config.addHpDelta) {
-            moveDelta += App.Config.addHpDelta;
-            addPlayerHp(playerBeingEdited, 1);
-          }
+        if (moveDelta > App.Config.addHpDelta) {
+          moveDelta -= App.Config.addHpDelta;
+          addPlayerHp(playerBeingEdited, -1);
+        } else if (moveDelta < -App.Config.addHpDelta) {
+          moveDelta += App.Config.addHpDelta;
+          addPlayerHp(playerBeingEdited, 1);
         }
       });
 
@@ -158,17 +159,19 @@
           return;
         }
 
-        if (playerBeingEdited) {
-          moveDelta += ev.originalEvent.changedTouches[0].screenY - lastScreenY;
-          lastScreenY = ev.originalEvent.changedTouches[0].screenY;
+        if (!playerBeingEdited) {
+          return;
+        }
 
-          if (moveDelta > App.Config.addHpDelta) {
-            moveDelta -= App.Config.addHpDelta;
-            addPlayerHp(playerBeingEdited, -1);
-          } else if (moveDelta < -App.Config.addHpDelta) {
-            moveDelta += App.Config.addHpDelta;
-            addPlayerHp(playerBeingEdited, 1);
-          }
+        moveDelta += ev.originalEvent.changedTouches[0].screenY - lastScreenY;
+        lastScreenY = ev.originalEvent.changedTouches[0].screenY;
+
+        if (moveDelta > App.Config.addHpDelta) {
+          moveDelta -= App.Config.addHpDelta;
+          addPlayerHp(playerBeingEdited, -1);
+        } else if (moveDelta < -App.Config.addHpDelta) {
+          moveDelta += App.Config.addHpDelta;
+          addPlayerHp(playerBeingEdited, 1);
         }
       });
 
@@ -179,21 +182,21 @@
        * @since 0.6.0
        */
       $('#endGame').on('click', (ev) => {
-        let playerOne = $('.name:first').val(),
-          playerTwo = $('.name:last').val(),
-          buttonOne = $('<button>').text(playerOne),
-          buttonTwo = $('<button>').text(playerTwo),
-          cancelButton = $('<button>').text('Cancel');
+        const playerOne = $('.name:first').val();
+        const playerTwo = $('.name:last').val();
+        const buttonOne = $('<button>').text(playerOne);
+        const buttonTwo = $('<button>').text(playerTwo);
+        const cancelButton = $('<button>').text('Cancel');
 
-        if (playerOne == playerTwo) {
-          alert('Os jogadores não podem ter o mesmo nome');
+        if (playerOne === playerTwo) {
+          App.Utils.errorPopup('Os jogadores não podem ter o mesmo nome');
           $('#menu').toggle();
           return;
         }
 
         $('#whoWonMenu').show().find('button').remove();
 
-        buttonOne.on('click', (ev) => {
+        buttonOne.on('click', () => {
           App.Sockets.counter.endGame({
             winner: playerOne,
             loser: playerTwo,
@@ -202,7 +205,7 @@
           cancelButton.click();
         });
 
-        buttonTwo.on('click', (ev) => {
+        buttonTwo.on('click', () => {
           App.Sockets.counter.endGame({
             winner: playerTwo,
             loser: playerOne,
@@ -211,7 +214,7 @@
           cancelButton.click();
         });
 
-        cancelButton.on('click', (ev) => {
+        cancelButton.on('click', () => {
           $('#whoWonMenu').hide();
         });
 
@@ -238,15 +241,17 @@
        * @since 0.7.0
        */
       $('.undo').on('click', (ev) => {
-        let playerEl = $(ev.target).closest('.player'),
-          lastHpEl = playerEl.find('.history > div > span:last'),
-          lastHpValue = lastHpEl.text().replace('-', '').replace('+', '-');
+        const playerElement = $(ev.target).closest('.player');
+        const lastHpElement = playerElement.find('.history > div > span:last');
+        const lastHpValue = lastHpElement.text().replace('-', '').replace('+', '-');
 
-        if (lastHpEl.length > 0) {
-          lastHpEl.remove();
-
-          addPlayerHp(playerEl, parseInt(lastHpValue), true);
+        if (lastHpElement.length === 0) {
+          return;
         }
+
+        lastHpElement.remove();
+
+        addPlayerHp(playerElement, Number(lastHpValue), true);
       });
     }
 
@@ -267,45 +272,42 @@
      * @author mauricio.araldi
      * @since 0.6.0
      *
-     * @param {jQuerySelector} playerEl The player to have it's HP add
-     * @param {Integer} hpDelta The amount of HP to add
-     * @param {Boolean} preventHistory If the life should NOT be added to history
+     * @param {jQuery} playerElement The player to have it's HP add
+     * @param {number} hpDelta The amount of HP to add
+     * @param {boolean} [preventHistory] If the life should NOT be added to history
      */
-    function addPlayerHp(playerEl, hpDelta, preventHistory) {
-      var hpEl = playerEl.find('.hp'),
-        curHp = parseInt(hpEl.text()),
-        historyEl = playerEl.find('.history'),
-        curHistoryDelta = parseInt(historyEl.attr('data-delta'));
+    function addPlayerHp(playerElement, hpDelta, preventHistory) {
+      const hpElement = playerElement.find('.hp');
+      const curHp = Number(hpElement.text());
+      const historyElement = playerElement.find('.history');
+      const curHistoryDelta = Number(historyElement.attr('data-delta'));
 
-      hpEl.text(curHp + hpDelta);
-      historyEl.attr('data-delta', curHistoryDelta + hpDelta);
+      hpElement.text(curHp + hpDelta);
+      historyElement.attr('data-delta', curHistoryDelta + hpDelta);
 
-      historyEl.attr('data-time', new Date().getTime());
+      historyElement.attr('data-time', Date.now());
 
       setTimeout(() => {
-        if (
-          new Date().getTime() - parseInt(historyEl.attr('data-time')) <
-          App.Config.hpProccessTime
-        ) {
+        if (Date.now() - Number(historyElement.attr('data-time')) < App.Config.hpProccessTime) {
           return;
         }
 
-        let diff = historyEl.attr('data-delta');
+        let diff = historyElement.attr('data-delta');
 
-        if (diff == '0') {
+        if (diff === '0') {
           return;
         }
 
-        if (diff.indexOf('-') == -1) {
+        if (!diff.includes('-')) {
           diff = '+'.concat(diff);
         }
 
         if (!preventHistory) {
-          historyEl.find('div').append($('<span>').text(diff));
+          historyElement.find('div').append($('<span>').text(diff));
         }
 
-        historyEl.scrollTop(historyEl[0].scrollTopMax);
-        historyEl.attr('data-delta', 0);
+        historyElement.scrollTop(historyElement[0].scrollTopMax);
+        historyElement.attr('data-delta', 0);
       }, App.Config.hpProccessTime);
     }
 
@@ -316,7 +318,7 @@
      * @author mauricio.araldi
      * @since 0.6.0
      *
-     * @param {Object<string, {id: string}>} players Players of the draft, keyed by player ID
+     * @param {{[key: string]: {id: string}}} players Players of the draft, keyed by player ID
      */
     function drawPlayers(players) {
       $('option').remove();
@@ -345,7 +347,7 @@
     };
   })();
 
-  //DOM Ready -- initializes the module
+  // DOM Ready -- initializes the module
   $(() => {
     App.counter.bindEvents();
     App.counter.init();

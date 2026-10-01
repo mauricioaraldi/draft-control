@@ -6,7 +6,7 @@
    * @since 0.6.0
    */
   App.Sockets.ServerHome = (function () {
-    var socket = io.connect('/serverHome');
+    const socket = io.connect('/serverHome');
 
     /**
      * Default function with all event bindings related to this module
@@ -40,7 +40,7 @@
        * @since 0.9.0
        */
       socket.on('newDraft', (data) => {
-        location.href = '/server?id=' + data;
+        location.assign('/server?id=' + data);
       });
     }
 
@@ -60,6 +60,8 @@
      *
      * @author mauricio.araldi
      * @since 0.6.0
+     *
+     * @param {string} draftName Name given to the new draft
      */
     function setDraftName(draftName) {
       socket.emit('setName', {
@@ -75,7 +77,7 @@
   })();
 
   // DOM Ready -- Initialize the module
-  $(function () {
+  $(() => {
     App.Sockets.ServerHome.init();
     App.Sockets.ServerHome.bindEvents();
   });

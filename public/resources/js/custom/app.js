@@ -37,23 +37,27 @@ App = {
   Utils: {
     /**
      * Default template for the confirmation popup.
+     *
+     * @param {string} text Question shown to the user
+     * @param {() => void} [yesAction] Called when the user clicks "Yes"
+     * @param {() => void} [noAction] Called when the user clicks "No"
      */
-    confirmPopup: (text, yesAction, noAction) => {
-      yesAction = typeof yesAction == 'function' ? yesAction : $.noop;
-      noAction = typeof noAction == 'function' ? noAction : $.noop;
+    confirmPopup(text, yesAction, noAction) {
+      yesAction = typeof yesAction === 'function' ? yesAction : $.noop;
+      noAction = typeof noAction === 'function' ? noAction : $.noop;
 
-      var confirm = new Noty({
+      const confirm = new Noty({
         layout: 'center',
         theme: 'metroui',
         type: 'confirmation',
         text,
         dismissQueue: false,
         buttons: [
-          Noty.button('Yes', 'btn btn-success', function () {
+          Noty.button('Yes', 'btn btn-success', () => {
             yesAction();
             confirm.close();
           }),
-          Noty.button('No', 'btn btn-error', function () {
+          Noty.button('No', 'btn btn-error', () => {
             noAction();
             confirm.close();
           }),
@@ -63,8 +67,10 @@ App = {
 
     /**
      * Default template for the error popup.
+     *
+     * @param {string} text Error message shown to the user
      */
-    errorPopup: (text) => {
+    errorPopup(text) {
       new Noty({
         layout: 'center',
         theme: 'metroui',
@@ -76,8 +82,10 @@ App = {
 
     /**
      * Default template for the success popup.
+     *
+     * @param {string} text Success message shown to the user
      */
-    successPopup: (text) => {
+    successPopup(text) {
       new Noty({
         layout: 'center',
         theme: 'metroui',
@@ -88,9 +96,11 @@ App = {
     },
 
     /**
-     * Default template for the info popup.
+     * Default template for the warning popup.
+     *
+     * @param {string} text Warning message shown to the user
      */
-    warningPopup: (text) => {
+    warningPopup(text) {
       new Noty({
         layout: 'center',
         theme: 'metroui',
@@ -109,30 +119,24 @@ App = {
      *
      * @param {Array} array Array to be shuffled
      * @param {Integer} times How many times the array will be shuffled
-     * @return {Array} The shuffled array
+     * @returns {Array} The shuffled array
      */
-    shuffle: (array, times) => {
-      var currentIndex = array.length,
-        temporaryValue,
-        randomIndex;
+    shuffle(array, times) {
+      let currentIndex = array.length;
 
       // While there remain elements to shuffle...
-      while (0 !== currentIndex) {
+      while (currentIndex !== 0) {
         // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
+        const randomIndex = Math.floor(Math.random() * currentIndex);
         currentIndex -= 1;
 
         // And swap it with the current element.
-        temporaryValue = array[currentIndex];
+        const temporaryValue = array[currentIndex];
         array[currentIndex] = array[randomIndex];
         array[randomIndex] = temporaryValue;
       }
 
-      if (times-- > 0) {
-        return App.Utils.shuffle(array, times);
-      }
-
-      return array;
+      return times-- > 0 ? App.Utils.shuffle(array, times) : array;
     },
   },
 };

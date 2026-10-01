@@ -1,15 +1,15 @@
 import Draft from '../Draft.js';
 import DraftModel from '../objects/DraftModel.js';
 
-/** @typedef {import('socket.io').Socket} Socket */
+/**
+ * @typedef {import('socket.io').Socket} Socket
+ */
 
 /**
- * Server socketHome
+ * Server socketHome, attached to the `/serverHome` namespace.
  *
  * @author mauricio.fiorest
  * @since 0.9.0
- *
- * @socket /serverHome
  *
  * @param {Socket} socket The connected client socket
  */
@@ -21,19 +21,20 @@ export default (socket) => {
    * @since 0.9.0
    */
   socket.on('loadHistory', (data) => {
-    var tempDraft = {};
-    for (var draft in Drafts) {
+    const temporaryDraft = {};
+    for (const draft in Drafts) {
       if (Drafts[draft].name) {
-        tempDraft[draft] =
+        temporaryDraft[draft] =
           Drafts[draft].name + ' - ' + new Date(Drafts[draft].date).toLocaleDateString('pt-BR');
       }
     }
-    if (!tempDraft) {
+
+    if (!temporaryDraft) {
       socket.emit('historyUnavailable');
     }
 
     socket.emit('history', {
-      drafts: tempDraft,
+      drafts: temporaryDraft,
       current: CurrentDraft,
     });
   });

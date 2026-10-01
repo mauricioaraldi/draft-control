@@ -8,6 +8,18 @@ System used to manage TCG drafts. Born to be used by me and my friends.
 
 Any contributions are welcome.
 
+## Running
+
+Requires Node.js 20 or newer.
+
+```sh
+npm install
+npm run dev   # restarts the server when files in app/ change
+npm start     # plain run
+```
+
+The app runs on http://localhost:3000. Set `PORT` to use another port (e.g. `PORT=8080 npm start`).
+
 ---
 
 ## Disclaimer

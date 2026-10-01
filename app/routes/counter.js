@@ -1,27 +1,30 @@
-import express from 'express';
-import fs from 'fs';
+import fs from 'node:fs';
+import path from 'node:path';
+import { Router } from 'express';
 
-import path from 'path';
 const __dirname = path.resolve();
-const router = express.Router();
 
 /**
- * Server Route
+ * Counter Route, serves the life counter page at `/`.
  *
  * @author mauricio.araldi
  * @since 0.8.0
  *
- * @path /counter/
+ * @returns {Router} Router to be mounted at `/`
  */
-router.get('/', (req, res) => {
-  const html = fs.readFileSync(__dirname + '/public/counter.html');
+export default function createCounterRouter() {
+  const router = new Router();
 
-  res.writeHead(200, {
-    'Content-Type': 'text/html',
+  router.get('/', (request, response) => {
+    const html = fs.readFileSync(__dirname + '/public/counter.html');
+
+    response.writeHead(200, {
+      'Content-Type': 'text/html',
+    });
+
+    response.write(html);
+    response.end();
   });
 
-  res.write(html);
-  res.end();
-});
-
-export default router;
+  return router;
+}

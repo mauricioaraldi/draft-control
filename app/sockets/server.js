@@ -1,20 +1,24 @@
 import Draft from '../Draft.js';
 
-/** @typedef {import('socket.io').Socket} Socket */
-/** @typedef {import('../objects/DraftModel.js').default} DraftModel */
+/**
+ * @typedef {import('socket.io').Socket} Socket
+ */
+/**
+ * @typedef {import('../objects/DraftModel.js').default} DraftModel
+ */
 
 /**
- * Server socket
+ * Server socket, attached to the `/server` namespace.
  *
  * @author mauricio.araldi
  * @since 0.8.0
  *
- * @socket /server
- *
  * @param {Socket} socket The connected client socket
  */
 export default (socket) => {
-  /** @type {DraftModel | null} The draft this client is working on */
+  /**
+   * @type {DraftModel | null} The draft this client is working on
+   */
   let draft = null;
 
   /**
@@ -92,13 +96,7 @@ export default (socket) => {
    * @since 0.8.0
    */
   socket.on('updateScore', (data) => {
-    draft = Draft.setMatchScore(
-      draft.id,
-      data.playerId,
-      data.playerScore,
-      data.opponentId,
-      data.opponentScore
-    );
+    draft = Draft.setMatchScore(draft.id, data);
 
     socket.emit('tournament', draft.tournament);
     socket.emit('suggestedMatches', Draft.buildSuggestedMatches(draft.id));

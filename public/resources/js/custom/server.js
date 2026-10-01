@@ -1,5 +1,8 @@
 /**
- * Counter controller
+ * Server controller
+ *
+ * @param {jQuery} $ The jQuery function
+ * @param {Window} window The browser window
  */
 (($, window) => {
   let decreaser;
@@ -20,9 +23,9 @@
        * @since 0.5.0
        */
       $(document).on('blur', '#player-inputs input:last-child', (ev) => {
-        var value = $(ev.currentTarget).val();
+        const value = $(ev.currentTarget).val();
 
-        //If blured input doesn't have any value, return
+        // If blured input doesn't have any value, return
         if (!value) {
           return;
         }
@@ -39,7 +42,7 @@
       $('#submit-draft-name').on('click', (ev) => {
         setLoading(true);
 
-        var name = $('#draft-name > input').val();
+        const name = $('#draft-name > input').val();
 
         App.Sockets.Server.setDraftName(name);
 
@@ -55,7 +58,7 @@
        * @since 0.6.0
        */
       $('#draft-name > input').on('keyup', (ev) => {
-        if (ev.which == 13) {
+        if (ev.which === 13) {
           $('#submit-draft-name').click();
         }
       });
@@ -78,16 +81,16 @@
           try {
             buildPlayers();
           } catch (error) {
-            return App.Utils.errorPopup(error);
+            return App.Utils.errorPopup(error.message);
           }
 
           /**
            * When players are loaded, build tournament tables
            */
-          $(document).on('playersLoaded', (ev) => {
+          $(document).on('playersLoaded', () => {
             changeScreen('table');
 
-            //Build Tournament
+            // Build Tournament
             App.Sockets.Server.getTournamentTable();
 
             setLoading(false);
@@ -104,13 +107,13 @@
        * @since 0.5.0
        */
       $(document).on('blur', '.score', (ev) => {
-        var playerId = $(ev.currentTarget).closest('.player-table').attr('data-player-id'),
-          opponentId = $(ev.currentTarget).closest('tr').attr('data-opp-id'),
-          playerScore = $(ev.currentTarget).closest('tr').find('.player-score').text(),
-          opponentScore = $(ev.currentTarget).closest('tr').find('.opp-score').text();
+        const playerId = $(ev.currentTarget).closest('.player-table').attr('data-player-id');
+        const opponentId = $(ev.currentTarget).closest('tr').attr('data-opp-id');
+        const playerScore = $(ev.currentTarget).closest('tr').find('.player-score').text();
+        const opponentScore = $(ev.currentTarget).closest('tr').find('.opp-score').text();
 
-        //When changing the score of a player, auto switch to the scores
-        //of opponent on the same match on blur
+        // When changing the score of a player, auto switch to the scores
+        // of opponent on the same match on blur
         if ($(ev.currentTarget).hasClass('player-score')) {
           return $('.player-table[data-player-index=' + playerId + ']')
             .find('tr[data-opp-index=' + opponentId + ']')
@@ -144,11 +147,11 @@
        * @since 0.9.0
        */
       $('#home').on('click', (ev) => {
-        location.href = '/server';
+        location.assign('/server');
       });
 
       /**
-       * upon clicking Draft Timer
+       * Upon clicking Draft Timer
        *
        * @author mauricio.araldi
        * @since 0.5.0
@@ -162,13 +165,13 @@
           try {
             buildPlayers();
           } catch (error) {
-            return App.Utils.errorPopup(error);
+            return App.Utils.errorPopup(error.message);
           }
 
           /**
            * Once players are loaded
            */
-          $(document).on('playersLoaded', (ev) => {
+          $(document).on('playersLoaded', () => {
             sortPlayerPlaces();
             App.Data.values.currentOrientation = 'Right';
 
@@ -188,8 +191,8 @@
        * @since 0.5.0
        */
       $('#init-timer').on('click', (ev) => {
-        var rounds = parseInt($('#round-number').val()),
-          time = Math.ceil(rounds * App.Config.draftRoundTime);
+        const rounds = Number($('#round-number').val());
+        const time = Math.ceil(rounds * App.Config.draftRoundTime);
 
         App.Data.values.roundsLeft = rounds;
         App.Data.values.draftTimer = time;
@@ -211,19 +214,21 @@
       $('#start-timer').on('click', (ev) => {
         startRoundSound();
 
-        setTimeout(function () {
+        setTimeout(() => {
           changeScreen('timerRunning');
 
-          decreaser = setInterval(function () {
+          decreaser = setInterval(() => {
             $('#clock').text(--App.Data.values.currentTime);
             timeIndicatorSound(App.Data.values.currentTime);
 
-            if (App.Data.values.currentTime == 0) {
-              clearInterval(decreaser);
-
-              $('#alarm-clock-sound')[0].play();
-              $('body').addClass('alarm-playing');
+            if (App.Data.values.currentTime !== 0) {
+              return;
             }
+
+            clearInterval(decreaser);
+
+            $('#alarm-clock-sound')[0].play();
+            $('body').addClass('alarm-playing');
           }, 1000);
         }, 500);
       });
@@ -259,9 +264,8 @@
         $('#rounds-left-timer').text(--App.Data.values.roundsLeft);
         $('#rounds-orientation').text(App.Data.values.currentOrientation);
 
-        if (App.Data.values.roundsLeft == 0) {
+        if (App.Data.values.roundsLeft === 0) {
           $(document).trigger('draft-timer-finished');
-          return;
         }
       });
 
@@ -273,7 +277,7 @@
        */
       $('#new-draft-round').on('click', (ev) => {
         App.Data.values.currentOrientation =
-          App.Data.values.currentOrientation == 'Right' ? 'Left' : 'Right';
+          App.Data.values.currentOrientation === 'Right' ? 'Left' : 'Right';
         changeScreen('newDraftRound');
       });
 
@@ -281,7 +285,7 @@
        * Return to home screen
        *
        * @author mauricio.araldi
-       * @since 0.5
+       * @since 0.5.0
        */
       $('#return-home').on('click', (ev) => {
         App.Data.players = {};
@@ -317,10 +321,12 @@
      * @public
      * @author mauricio.fiorest
      * @since 0.9.0
+     *
+     * @param {object} playersData Players of the draft, keyed by player ID (not used yet)
      */
     function initPlayers(playersData) {
       changeScreen('players');
-      if ($('#player-inputs input').length == 0) {
+      if ($('#player-inputs input').length === 0) {
         createPlayerInput();
       }
     }
@@ -350,20 +356,20 @@
     function buildPlayers() {
       setLoading(true);
 
-      let players = [];
+      const players = [];
 
-      //Runs trought the inputs with player names
+      // Runs trought the inputs with player names
       $('#player-names input').each((index, input) => {
-        var playerName = $(input).val();
+        const playerName = $(input).val();
 
-        //Prevents blank names
+        // Prevents blank names
         if (!playerName) {
           return;
         }
 
-        if (players[playerName]) {
+        if (players.includes(playerName)) {
           setLoading(false);
-          throw `Names can't be equal: ${playerName}`;
+          throw new Error(`Names can't be equal: ${playerName}`);
         }
 
         players.push(playerName);
@@ -386,9 +392,11 @@
      * @private
      * @author mauricio.araldi
      * @since 0.6.0
+     *
+     * @param {string} screen Name of the screen to show (one of the values above)
      */
     function changeScreen(screen) {
-      //Reset everything
+      // Reset everything
       $('#buttons').addClass('hidden');
       $('#buttons > #load').addClass('hidden');
 
@@ -406,57 +414,66 @@
 
       $('#tournament-table').addClass('hidden');
 
-      //Shows what must be shown
+      // Shows what must be shown
       switch (screen) {
-        case 'draftName':
+        case 'draftName': {
           $('#draft-name').removeClass('hidden');
           $('#buttons').removeClass('hidden');
           $('#buttons > #load').removeClass('hidden');
           break;
+        }
 
-        case 'players':
+        case 'players': {
           $('#buttons').removeClass('hidden');
           $('#buttons > #load').removeClass('hidden');
           $('#player-names').removeClass('hidden');
           break;
+        }
 
-        case 'table':
+        case 'table': {
           $('#buttons').removeClass('hidden');
           $('#buttons > #load').removeClass('hidden');
           $('#tournament-table').removeClass('hidden');
           break;
+        }
 
-        case 'timer':
+        case 'timer': {
           $('#draft-timer').removeClass('hidden');
           $('#draft-timer > #draft-timer-settings').removeClass('hidden');
           $('#draft-timer > #draft-timer-places').removeClass('hidden');
           break;
+        }
 
-        case 'startTimer':
+        case 'startTimer': {
           $('#draft-timer').removeClass('hidden');
           $('#draft-timer > #draft-timer-runner').removeClass('hidden');
           $('#draft-timer #start-timer').removeClass('hidden');
           break;
+        }
 
-        case 'timerRunning':
+        case 'timerRunning': {
           $('#draft-timer').removeClass('hidden');
           $('#draft-timer > #draft-timer-runner').removeClass('hidden');
           $('#draft-timer #restart-timer').removeClass('hidden');
           break;
+        }
 
-        case 'newDraftRound':
+        case 'newDraftRound': {
           $('#draft-timer').removeClass('hidden');
           $('#draft-timer > #draft-timer-settings').removeClass('hidden');
           break;
+        }
 
-        case 'timerFinished':
+        case 'timerFinished': {
           $('#draft-timer').removeClass('hidden');
           $('#draft-timer > #draft-finished').removeClass('hidden');
           break;
+        }
 
-        default:
+        default: {
           App.Utils.errorPopup(`Invalid screen to load: ${screen}`);
           break;
+        }
       }
     }
 
@@ -468,13 +485,13 @@
      * @since 0.5.0
      */
     function createPlayerInput() {
-      var playerNumber = $('#player-inputs input').length + 1,
-        newInput = $('<input>');
+      const playerNumber = $('#player-inputs input').length + 1;
+      const newInput = $('<input>');
 
       newInput.attr('id', 'player-' + playerNumber).attr('placeholder', 'Player ' + playerNumber);
 
       newInput.on('keypress', (ev) => {
-        if (ev.which == 13) {
+        if (ev.which === 13) {
           $(ev.currentTarget).blur();
         }
       });
@@ -493,17 +510,17 @@
      */
     function startRoundSound() {
       $('#hi-beep-sound')[0].play();
-      setTimeout(function () {
+      setTimeout(() => {
         $('#hi-beep-sound')[0].pause();
         $('#hi-beep-sound')[0].currentTime = 0;
 
         $('#hi-beep-sound')[0].play();
-        setTimeout(function () {
+        setTimeout(() => {
           $('#hi-beep-sound')[0].pause();
           $('#hi-beep-sound')[0].currentTime = 0;
 
           $('#chime-sound')[0].play();
-          setTimeout(function () {
+          setTimeout(() => {
             $('#chime-sound')[0].pause();
             $('#chime-sound')[0].currentTime = 0;
           }, 1000);
@@ -517,44 +534,59 @@
      * @private
      * @author mauricio.araldi
      * @since 0.5.0
+     *
+     * @param {number} time Seconds left in the current round
      */
     function timeIndicatorSound(time) {
-      if (time == App.Config.firstNotificationBeepTime) {
-        $('#hi-beep-sound')[0].play();
-        setTimeout(function () {
-          $('#hi-beep-sound')[0].pause();
-          $('#hi-beep-sound')[0].currentTime = 0;
-        }, 500);
-      } else if (time == App.Config.secondNotificationBeepTime) {
-        $('#lo-beep-sound')[0].play();
-        setTimeout(function () {
-          $('#lo-beep-sound')[0].pause();
-          $('#lo-beep-sound')[0].currentTime = 0;
-
+      switch (time) {
+        case App.Config.firstNotificationBeepTime: {
           $('#hi-beep-sound')[0].play();
-          setTimeout(function () {
+          setTimeout(() => {
             $('#hi-beep-sound')[0].pause();
             $('#hi-beep-sound')[0].currentTime = 0;
           }, 500);
-        }, 500);
-      } else if (time == App.Config.thirdNotificationBeepTime) {
-        $('#lo-beep-sound')[0].play();
-        setTimeout(function () {
-          $('#lo-beep-sound')[0].pause();
-          $('#lo-beep-sound')[0].currentTime = 0;
 
+          break;
+        }
+
+        case App.Config.secondNotificationBeepTime: {
           $('#lo-beep-sound')[0].play();
-          setTimeout(function () {
+          setTimeout(() => {
             $('#lo-beep-sound')[0].pause();
             $('#lo-beep-sound')[0].currentTime = 0;
 
             $('#hi-beep-sound')[0].play();
-            setTimeout(function () {
+            setTimeout(() => {
               $('#hi-beep-sound')[0].pause();
               $('#hi-beep-sound')[0].currentTime = 0;
             }, 500);
           }, 500);
-        }, 500);
+
+          break;
+        }
+
+        case App.Config.thirdNotificationBeepTime: {
+          $('#lo-beep-sound')[0].play();
+          setTimeout(() => {
+            $('#lo-beep-sound')[0].pause();
+            $('#lo-beep-sound')[0].currentTime = 0;
+
+            $('#lo-beep-sound')[0].play();
+            setTimeout(() => {
+              $('#lo-beep-sound')[0].pause();
+              $('#lo-beep-sound')[0].currentTime = 0;
+
+              $('#hi-beep-sound')[0].play();
+              setTimeout(() => {
+                $('#hi-beep-sound')[0].pause();
+                $('#hi-beep-sound')[0].currentTime = 0;
+              }, 500);
+            }, 500);
+          }, 500);
+
+          break;
+        }
+        // No default
       }
     }
 
@@ -569,7 +601,7 @@
       changeScreen('table');
       $('#tables').empty();
 
-      getPlayersInOrder().forEach(function (player, index) {
+      getPlayersInOrder().forEach((player, index) => {
         $('#tables').append(buildPlayerTable(player.id, index + 1));
       });
 
@@ -585,45 +617,42 @@
      *
      * @param {string} playerId ID of the player whose table is built
      * @param {number} position Current ranking position of the player
-     * @return {jQuery} The player's table element
+     * @returns {jQuery} The player's table element
      */
     function buildPlayerTable(playerId, position) {
-      var player = App.Data.players[playerId],
-        playerTable = App.Data.tournament[playerId],
-        htmlTable = $('<table class="player-table">'),
-        positionTr = $('<tr class="position">'),
-        positionTd = $('<td colspan="5">').text(position + 'º'),
-        createPlayerName = true,
-        totalGamesWon = 0,
-        totalGamesLost = 0,
-        totalMatchesWon = 0,
-        totalMatchesLost = 0;
+      const player = App.Data.players[playerId];
+      const playerTable = App.Data.tournament[playerId];
+      const htmlTable = $('<table class="player-table">');
+      const positionTr = $('<tr class="position">');
+      const positionTd = $('<td colspan="5">').text(position + 'º');
+      let isCreatePlayerName = true;
+      let totalGamesWon = 0;
+      let totalGamesLost = 0;
+      let totalMatchesWon = 0;
+      let totalMatchesLost = 0;
 
       htmlTable.attr('data-player-id', playerId).append(positionTr.append(positionTd));
 
       App.Data.players[playerId].matchesWon = 0;
       App.Data.players[playerId].matchesLost = 0;
 
-      //Runs all the players to build the matches of a player
-      for (var opponentId in App.Data.players) {
-        var opponent = App.Data.players[opponentId],
-          tr = $('<tr>'),
-          playerScore = $('<td class="score player-score" contenteditable>'),
-          divider = $('<td class="divider">').text('X'),
-          oppScore = $('<td class="score opp-score" contenteditable>'),
-          oppName = $('<td class="opp-name">').text(opponent.id),
-          matchesWon,
-          matchesLost;
+      // Runs all the players to build the matches of a player
+      for (const [opponentId, opponent] of Object.entries(App.Data.players)) {
+        const tr = $('<tr>');
+        const playerScore = $('<td class="score player-score" contenteditable>');
+        const divider = $('<td class="divider">').text('X');
+        const oppScore = $('<td class="score opp-score" contenteditable>');
+        const oppName = $('<td class="opp-name">').text(opponent.id);
 
-        //If the opponent is the same of player, doesn't create match
-        if (player.id == opponent.id) {
+        // If the opponent is the same of player, doesn't create match
+        if (player.id === opponent.id) {
           continue;
         }
 
-        //Data opp index
+        // Data opp index
         tr.attr('data-opp-id', opponentId);
 
-        if (createPlayerName) {
+        if (isCreatePlayerName) {
           tr.append(
             $('<td class="player-name">')
               .attr('rowspan', Object.keys(App.Data.players).length)
@@ -631,20 +660,19 @@
               .append($('<p class="player-games-score">'))
               .append($('<p class="player-matches-score">'))
           );
-          createPlayerName = false;
+          isCreatePlayerName = false;
         }
 
-        //Adjust scores
-        matchesWon = playerTable[opponentId]['matchesWon'];
-        matchesLost = playerTable[opponentId]['matchesLost'];
-        playerScore.text(matchesWon ? matchesWon : matchesLost ? '0' : '');
-        oppScore.text(matchesLost ? matchesLost : matchesWon ? '0' : '');
-        totalMatchesWon += matchesWon ? parseInt(matchesWon) : 0;
-        totalMatchesLost += matchesLost ? parseInt(matchesLost) : 0;
+        // Adjust scores
+        const { matchesWon, matchesLost } = playerTable[opponentId];
+        playerScore.text(matchesWon || (matchesLost ? '0' : ''));
+        oppScore.text(matchesLost || (matchesWon ? '0' : ''));
+        totalMatchesWon += matchesWon ? Number(matchesWon) : 0;
+        totalMatchesLost += matchesLost ? Number(matchesLost) : 0;
 
-        //If the wins/loses are 2 or higher, adds a win/lose to player
-        totalGamesWon += parseInt(matchesWon / 2);
-        totalGamesLost += parseInt(matchesLost / 2);
+        // If the wins/loses are 2 or higher, adds a win/lose to player
+        totalGamesWon += Math.trunc(matchesWon / 2);
+        totalGamesLost += Math.trunc(matchesLost / 2);
 
         if (matchesWon > 1 && matchesWon > matchesLost) {
           tr.addClass('win');
@@ -657,7 +685,7 @@
         htmlTable.append(tr);
       }
 
-      //Adjust player object
+      // Adjust player object
       App.Data.players[playerId].gamesWon = totalGamesWon;
       App.Data.players[playerId].gamesLost = totalGamesLost;
       App.Data.players[playerId].totalGames = totalGamesWon + totalGamesLost;
@@ -686,14 +714,8 @@
      * @since 0.5.0
      */
     function sortPlayerPlaces() {
-      var order = [];
-
-      for (var key in App.Data.players) {
-        order.push(App.Data.players[key]);
-      }
-
-      //Shuffle three times
-      order = App.Utils.shuffle(order, 3);
+      // Shuffle three times
+      const order = App.Utils.shuffle(Object.values(App.Data.players), 3);
 
       order.forEach((player) => {
         $('#draft-timer-places > span').text(
@@ -710,40 +732,36 @@
      * @private
      * @author mauricio.araldi
      * @since 0.5.0
+     *
+     * @returns {object[]} Players sorted from first to last place
      */
     function getPlayersInOrder() {
-      var playerOrder = [];
-
-      //Gets all players that will be drawed
-      for (var playerId in App.Data.players) {
-        playerOrder.push(App.Data.players[playerId]);
-      }
+      // Gets all players that will be drawed
+      const playerOrder = Object.values(App.Data.players);
 
       playerOrder.sort((a, b) => {
-        //1st Criteria = games won (more is better)
-        if (a.gamesWon != b.gamesWon) {
+        // 1st Criteria = games won (more is better)
+        if (a.gamesWon !== b.gamesWon) {
           return b.gamesWon - a.gamesWon;
         }
 
-        //2nd Criteria = total games played (more is better)
-        if (a.totalGames != b.totalGames) {
+        // 2nd Criteria = total games played (more is better)
+        if (a.totalGames !== b.totalGames) {
           return b.totalGames - a.totalGames;
         }
 
-        //3rd Criteria = games lost (less is beter)
-        if (a.gamesLost != b.gamesLost) {
+        // 3rd Criteria = games lost (less is beter)
+        if (a.gamesLost !== b.gamesLost) {
           return a.gamesLost - b.gamesLost;
         }
 
-        //4th Criteria = matches won (more is better)
-        if (a.matchesWon != b.matchesWon) {
+        // 4th Criteria = matches won (more is better)
+        if (a.matchesWon !== b.matchesWon) {
           return b.matchesWon - a.matchesWon;
         }
 
-        //5th Criteria = matches lost (less is better)
-        if (a.matchesLost != b.matchesLost) {
-          return a.matchesLost - b.matchesLost;
-        }
+        // 5th Criteria = matches lost (less is better)
+        return a.matchesLost - b.matchesLost;
       });
 
       return playerOrder;
@@ -756,11 +774,12 @@
      * @author mauricio.araldi
      * @since  0.6.0
      *
-     * @param {Boolean} isLoading If the app is loading or not
+     * @param {boolean} isLoading If the app is loading or not
      */
     function setLoading(isLoading) {
       if (!isLoading) {
-        return $('#loader').remove();
+        $('#loader').remove();
+        return;
       }
 
       $('body').append($('<div id="loader">Loading</div>'));
@@ -773,7 +792,7 @@
      * @author mauricio.araldi
      * @since 0.6.0
      *
-     * @param {Object} data Data received from server
+     * @param {string[]} data Suggested matches received from server
      */
     function drawSuggestedMatches(data) {
       $('#suggested-matches > p').remove();
@@ -793,7 +812,7 @@
     };
   })();
 
-  //DOM Ready -- initializes the module
+  // DOM Ready -- initializes the module
   $(() => {
     App.server.bindEvents();
     App.server.load();

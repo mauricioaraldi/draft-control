@@ -1,45 +1,49 @@
 {
-  "type": "module",
-  "name": "DraftControl",
+  "name": "draft-control",
   "version": "0.10.0",
+  "private": true,
   "description": "Draft Control Project.",
-  "keywords": [
-    "draft",
-    "tcg"
-  ],
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": "github:mauricioaraldi/draft-control",
   "homepage": "https://github.com/mauricioaraldi/draft-control",
-  "main": "app/app.js",
+  "author": "Mauricio Araldi (https://github.com/mauricioaraldi)",
+  "type": "module",
+  "exports": "./app/app.js",
+  "sideEffects": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "babel": "babel-node app/app.js",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "start": "node app/app.js",
+    "dev": "node --watch app/app.js",
+    "lint": "npm run lint:js && npm run lint:css",
+    "lint:js": "eslint .",
+    "lint:css": "stylelint \"**/*.css\"",
+    "lint:fix": "eslint . --fix && stylelint \"**/*.css\" --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": {
-    "name": "Mauricio Araldi",
-    "url": "https://github.com/mauricioaraldi"
-  },
-  "license": "SEE LICENSE IN LICENSE",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mauricioaraldi/draft-control.git"
-  },
+  "keywords": [
+    "draft",
+    "tcg"
+  ],
   "dependencies": {
     "body-parser": "^2.3.0",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "jquery": "^4.0.0",
+    "normalize.css": "^8.0.1",
+    "noty": "^3.2.0-beta-deprecated",
     "socket.io": "^4.8.4"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.6",
-    "@babel/node": "^8.0.6",
-    "@babel/preset-env": "^8.0.6",
-    "@eslint/js": "^10.0.1",
     "eslint": "^10.11.0",
-    "eslint-config-prettier": "^10.1.8",
+    "eslint-config-xo": "^4.0.1",
     "globals": "^17.12.0",
-    "prettier": "^3.9.9"
+    "prettier": "^3.9.9",
+    "stylelint": "^17.15.0",
+    "stylelint-config-standard": "^40.0.0",
+    "stylelint-order": "^8.1.1"
   }
 }

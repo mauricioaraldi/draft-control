@@ -10,19 +10,19 @@
  ***************************************************************
  **************************************************************/
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import process from 'node:process';
 import express from 'express';
 import session from 'express-session';
-import fs from 'fs';
 import bodyParser from 'body-parser';
 import { Server } from 'socket.io';
-
 import counterSocket from './sockets/counter.js';
 import serverSocket from './sockets/server.js';
 import serverSocketHome from './sockets/serverHome.js';
+import registerRoutes from './routes.js';
 
-/////////////
-// Globals //
-/////////////
+// Globals
 const KEY = 'express.sid';
 const SECRET = 'D54F7C0N750L';
 const PORT = process.env.PORT || 3000;
@@ -33,15 +33,15 @@ global.Drafts = {};
 global.CurrentDraft = '';
 
 global.Configs = {
-  autoSaveTime: 60000,
+  autoSaveTime: 60_000,
 };
 
-/////////////
-// Configs //
-/////////////
-import path from 'path';
+// Configs
 const __dirname = path.resolve();
 app.use(express.static(__dirname + '/public'));
+app.use('/vendor/jquery', express.static(__dirname + '/node_modules/jquery/dist'));
+app.use('/vendor/noty', express.static(__dirname + '/node_modules/noty/lib'));
+app.use('/vendor/normalize', express.static(__dirname + '/node_modules/normalize.css'));
 app.use(
   bodyParser.urlencoded({
     extended: true,
@@ -59,20 +59,18 @@ const sessionStore = session({
   },
 });
 
-//////////
-// Body //
-//////////
+// Body
 
 // Load games
-fs.readFile('data.json', 'UTF-8', (err, data) => {
-  if (err) {
-    return console.error(err);
-  }
+try {
+  const data = await fs.readFile('data.json', 'utf8');
 
   Drafts = data ? JSON.parse(data) : Drafts;
 
   console.log('Drafts loaded.');
-});
+} catch (error) {
+  console.error(error);
+}
 
 // Starts server
 global.io = new Server(
@@ -86,7 +84,7 @@ app.use(sessionStore);
 io.engine.use(sessionStore);
 
 // Routing
-import('./routes.js');
+registerRoutes(app);
 
 // Initialize counter socket
 io.of('/counter').on('connection', counterSocket);
@@ -98,19 +96,19 @@ io.of('/server').on('connection', serverSocket);
 io.of('/serverHome').on('connection', serverSocketHome);
 
 // Save Games automatically
-setInterval(() => {
-  //prevent empty draft save
-  var tempDraft = {};
-  for (var draft in Drafts) {
+setInterval(async () => {
+  // Prevent empty draft save
+  const temporaryDraft = {};
+  for (const draft in Drafts) {
     if (Drafts[draft].name) {
-      tempDraft[draft] = Drafts[draft];
+      temporaryDraft[draft] = Drafts[draft];
     }
   }
-  ////---<
-  fs.writeFile('data.json', JSON.stringify(tempDraft), (err) => {
-    if (err) {
-      return console.error(err);
-    }
+
+  try {
+    await fs.writeFile('data.json', JSON.stringify(temporaryDraft));
     console.log('Drafts saved.');
-  });
+  } catch (error) {
+    console.error(error);
+  }
 }, Configs.autoSaveTime);

@@ -1,8 +1,9 @@
-import crypto from 'crypto';
-
+import crypto from 'node:crypto';
 import PlayerModel from './objects/PlayerModel.js';
 
-/** @typedef {import('./objects/DraftModel.js').default} DraftModel */
+/**
+ * @typedef {import('./objects/DraftModel.js').default} DraftModel
+ */
 
 /**
  * Manages data and flows about drafts
@@ -10,18 +11,18 @@ import PlayerModel from './objects/PlayerModel.js';
  * @author mauricio.araldi
  * @since 0.8.0
  */
-export default class Draft {
+const Draft = {
   /**
    * Generates a random ID for the draft
    *
    * @author mauricio.araldi
    * @since  0.10.0
    *
-   * @return {String} An md5 hex string format to be used as draft ID
+   * @returns {string} An md5 hex string format to be used as draft ID
    */
-  static generateId() {
-    return crypto.createHash('md5').update(`${new Date().getTime()}`).digest('hex');
-  }
+  generateId() {
+    return crypto.createHash('md5').update(String(Date.now())).digest('hex');
+  },
 
   /**
    * Registers a new draft in the server
@@ -31,13 +32,13 @@ export default class Draft {
    *
    * @param {DraftModel} draft The draft to be registered on server
    */
-  static register(draft) {
+  register(draft) {
     if (!draft) {
       throw new Error('A draft to be registered is required.');
     }
 
     Drafts[draft.id] = draft;
-  }
+  },
 
   /**
    * Gets a draft from register
@@ -45,16 +46,17 @@ export default class Draft {
    * @author mauricio.araldi
    * @since 0.8.0
    *
-   * @param {Integer} id ID of the draft to be retrieved
-   * @return {DraftModel} The draft from register
+   * @param {string} id ID of the draft to be retrieved
+   * @returns {DraftModel} The draft from register
    */
-  static get(id) {
+  get(id) {
     if (!id) {
       throw new Error('An id is required to retrieve a draft from register.');
     }
+
     CurrentDraft = id;
     return Drafts[id];
-  }
+  },
 
   /**
    * Sets the name of a draft register
@@ -62,11 +64,11 @@ export default class Draft {
    * @author mauricio.araldi
    * @since 0.8.0
    *
-   * @param {Integer} id ID of the draft to have its name set
-   * @param {String} name Name of the draft
-   * @return {DraftModel} The draft from register
+   * @param {string} id ID of the draft to have its name set
+   * @param {string} name Display name given to the draft by the organizer
+   * @returns {DraftModel} The draft from register
    */
-  static setName(id, name) {
+  setName(id, name) {
     if (!id) {
       throw new Error('An id is required to set the draft name.');
     }
@@ -75,7 +77,7 @@ export default class Draft {
       throw new Error('A name is required to set the draft name.');
     }
 
-    if (!Drafts[id]) {
+    if (!Object.hasOwn(Drafts, id)) {
       throw new Error(`Draft of id ${id} not found to set name`);
     }
 
@@ -83,7 +85,7 @@ export default class Draft {
     Drafts[id].date = new Date();
 
     return Drafts[id];
-  }
+  },
 
   /**
    * Adds a player into the draft
@@ -91,19 +93,16 @@ export default class Draft {
    * @author mauricio.araldi
    * @since 0.8.0
    *
-   * @param {Integer} id ID of the draft to have the player added
-   * @param {String} name Name of the player to be added
-   * @return {DraftModel} The draft from register
+   * @param {string} id ID of the draft to have the player added
+   * @param {string} name Name of the player to be added
+   * @returns {DraftModel} The draft from register
    */
-  static addPlayer(id, name) {
-    if (!Drafts[id].players) {
-      Drafts[id].players = {};
-    }
-
-    Drafts[id].players[name] = new PlayerModel(name, 0, 0, 0, 0, 0);
+  addPlayer(id, name) {
+    Drafts[id].players ||= {};
+    Drafts[id].players[name] = new PlayerModel(name);
 
     return Drafts[id];
-  }
+  },
 
   /**
    * Builds the tournament table for a draft
@@ -111,14 +110,14 @@ export default class Draft {
    * @author mauricio.araldi
    * @since 0.8.0
    *
-   * @param {Integer} id ID of the draft to have its tournament table builded
-   * @return {DraftModel} The draft from register
+   * @param {string} id ID of the draft to have its tournament table builded
+   * @returns {DraftModel} The draft from register
    */
-  static buildTournamentObject(id) {
+  buildTournamentObject(id) {
     const draft = Drafts[id];
 
     if (!draft) {
-      throw Error(`No valid draft was found for the id ${id}`);
+      throw new Error(`No valid draft was found for the id ${id}`);
     }
 
     const tournament = {};
@@ -129,10 +128,7 @@ export default class Draft {
           return;
         }
 
-        if (!tournament[player.id]) {
-          tournament[player.id] = {};
-        }
-
+        tournament[player.id] ||= {};
         tournament[player.id][opponent.id] = {
           matchesWon: null,
           matchesLost: null,
@@ -143,7 +139,7 @@ export default class Draft {
     Drafts[id].tournament = tournament;
 
     return Drafts[id];
-  }
+  },
 
   /**
    * Builds the suggested matches for a draft
@@ -151,58 +147,55 @@ export default class Draft {
    * @author mauricio.araldi
    * @since 0.8.0
    *
-   * @param {Integer} id ID of the draft to have its matches suggested
-   * @return {DraftModel} The draft from register
+   * @param {string} id ID of the draft to have its matches suggested
+   * @returns {string[]} Suggested matches, formatted as "player x opponent"
    */
-  static buildSuggestedMatches(id) {
+  buildSuggestedMatches(id) {
     const draft = Drafts[id];
 
     if (!draft) {
-      throw Error(`No valid draft was found for the id ${id}`);
+      throw new Error(`No valid draft was found for the id ${id}`);
     }
 
     const suggestedMatches = [];
     const alreadyEnrolled = [];
     const players = Object.values(draft.players);
 
-    //Sort players by number of games
+    // Sort players by number of games
     players.sort((a, b) => {
-      const aGames = a.gamesWon + a.gamesLost,
-        bGames = b.gamesWon + b.gamesLost;
+      const aGames = a.gamesWon + a.gamesLost;
+      const bGames = b.gamesWon + b.gamesLost;
 
       return aGames - bGames;
     });
 
     players.forEach((player) => {
-      //If a match was already suggested to this player, skip it
-      if (alreadyEnrolled.indexOf(player.id) > -1) {
+      // If a match was already suggested to this player, skip it
+      if (alreadyEnrolled.includes(player.id)) {
         return;
       }
 
-      players.some((opponent) => {
-        //If is the same as pĺayer, or if a match was already suggested for this opponent, skip it
-        if (player.id == opponent.id || alreadyEnrolled.indexOf(opponent.id) > -1) {
-          return;
+      for (const opponent of players) {
+        // If is the same as player, or if a match was already suggested for this opponent, skip it
+        if (player.id === opponent.id || alreadyEnrolled.includes(opponent.id)) {
+          continue;
         }
 
-        const matchesWon = parseInt(draft.tournament[player.id][opponent.id].matchesWon);
+        const { matchesWon } = draft.tournament[player.id][opponent.id];
 
-        //If the player X opponent have played already, skip them
-        if (!isNaN(matchesWon)) {
-          return;
+        // If the player X opponent have played already, skip them
+        if (matchesWon !== null && matchesWon !== undefined) {
+          continue;
         }
 
-        alreadyEnrolled.push(player.id);
-        alreadyEnrolled.push(opponent.id);
-
+        alreadyEnrolled.push(player.id, opponent.id);
         suggestedMatches.push(player.id + ' x ' + opponent.id);
-
-        return true;
-      });
+        break;
+      }
     });
 
     return suggestedMatches;
-  }
+  },
 
   /**
    * Sets the score for a match
@@ -210,34 +203,32 @@ export default class Draft {
    * @author mauricio.araldi
    * @since 0.8.0
    *
-   * @param {Integer} id ID of the draft to have its matches suggested
-   * @param {Integer} playerId The id of the player who played the match
-   * @param {Integer} playerScore The score of the player who played the match
-   * @param {Integer} opponentId The id of the opponent
-   * @param {Integer} opponentScore The score of the opponent
-   * @return {DraftModel} The draft from register
+   * @param {string} id ID of the draft the match belongs to
+   * @param {object} match The match result
+   * @param {string} match.playerId The id of the player who played the match
+   * @param {number|string} match.playerScore Games won by the player (empty when not played)
+   * @param {string} match.opponentId The id of the player faced in the match
+   * @param {number|string} match.opponentScore Games won by that player (empty when not played)
+   * @returns {DraftModel} The draft from register
    */
-  static setMatchScore(id, playerId, playerScore, opponentId, opponentScore) {
-    if (!Drafts[id]) {
-      throw Error(`No valid draft was found for the id ${id}`);
+  setMatchScore(id, { playerId, playerScore, opponentId, opponentScore }) {
+    if (!Object.hasOwn(Drafts, id)) {
+      throw new Error(`No valid draft was found for the id ${id}`);
     }
 
-    //Updates table owner score
-    Drafts[id].tournament[playerId][opponentId]['matchesWon'] = playerScore
-      ? parseInt(playerScore)
-      : null;
-    Drafts[id].tournament[playerId][opponentId]['matchesLost'] = opponentScore
-      ? parseInt(opponentScore)
-      : null;
+    const player = playerScore ? Math.trunc(Number(playerScore)) : null;
+    const opponent = opponentScore ? Math.trunc(Number(opponentScore)) : null;
 
-    //Updates opponent score
-    Drafts[id].tournament[opponentId][playerId]['matchesWon'] = opponentScore
-      ? parseInt(opponentScore)
-      : null;
-    Drafts[id].tournament[opponentId][playerId]['matchesLost'] = playerScore
-      ? parseInt(playerScore)
-      : null;
+    // Updates table owner score
+    Drafts[id].tournament[playerId][opponentId].matchesWon = player;
+    Drafts[id].tournament[playerId][opponentId].matchesLost = opponent;
+
+    // Updates opponent score
+    Drafts[id].tournament[opponentId][playerId].matchesWon = opponent;
+    Drafts[id].tournament[opponentId][playerId].matchesLost = player;
 
     return Drafts[id];
-  }
-}
+  },
+};
+
+export default Draft;

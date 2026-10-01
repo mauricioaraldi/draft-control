@@ -1,69 +1,76 @@
 ﻿<!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
     <title>Draft Control 0.10.0</title>
-
     <!-- Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
 
-    <!-- JS APIs -->
-    <script type="text/javascript" src="resources/js/api/jquery/jquery-3.3.1.min.js"></script>
+    <!-- JS libraries -->
+    <script src="/vendor/jquery/jquery.min.js"></script>
+    <script src="/vendor/noty/noty.min.js"></script>
 
-    <!-- JS CUSTOM -->
-    <script type="text/javascript" src="resources/js/custom/app.js"></script>
-    <script type="text/javascript" src="resources/js/custom/serverSocket.js"></script>
-    <script type="text/javascript" src="resources/js/custom/server.js"></script>
+    <!-- JS custom -->
+    <script src="resources/js/custom/app.js"></script>
+    <script src="resources/js/custom/serverSocket.js"></script>
+    <script src="resources/js/custom/server.js"></script>
 
-    <!-- CSS API -->
-    <link rel="stylesheet" href="resources/css/api/clearfix.css" />
-    <link rel="stylesheet" href="resources/css/api/normalize.css" />
+    <!-- CSS (same order as before: Noty styles load last) -->
+    <link href="resources/css/custom/clearfix.css" rel="stylesheet" />
+    <link href="/vendor/normalize/normalize.css" rel="stylesheet" />
+    <link href="resources/css/custom/index.css" rel="stylesheet" />
+    <link href="resources/css/custom/server.css" rel="stylesheet" />
+    <link href="/vendor/noty/themes/metroui.css" rel="stylesheet" />
+    <link href="/vendor/noty/noty.css" rel="stylesheet" />
 
-    <!-- CSS CUSTOM -->
-    <link rel="stylesheet" href="resources/css/custom/index.css" />
-    <link rel="stylesheet" href="resources/css/custom/server.css" />
+    <meta
+      content="Manage a Draft Control draft: players, draft timer and tournament table."
+      name="description"
+    />
 
-    <!-- COMPLETE API -->
-    <link rel="stylesheet" href="resources/js/api/noty-3.1.3/themes/metroui.css" />
-    <link rel="stylesheet" href="resources/js/api/noty-3.1.3/noty.css" />
-    <script type="text/javascript" src="resources/js/api/noty-3.1.3/noty.min.js"></script>
+    <!-- Open Graph (link previews) -->
+    <meta content="Draft Control" property="og:title" />
+    <meta content="website" property="og:type" />
+    <meta content="/server" property="og:url" />
+    <meta content="/resources/images/og-image.png" property="og:image" />
   </head>
 
   <body>
     <span id="logo">Draft Control 0.10.0</span>
 
     <h1>Draft Control 0.10.0</h1>
-    <h3 style="display: none">--/--/----</h3>
+    <h2 class="hidden">--/--/----</h2>
 
-    <div class="page centered hidden" id="draft-name">
+    <div id="draft-name" class="page centered hidden">
       <p>Insert draft name</p>
-      <input />
-      <button class="button" id="submit-draft-name">Ok</button>
+      <input aria-label="Draft name" />
+      <button id="submit-draft-name" type="button" class="button">Ok</button>
     </div>
 
-    <div class="page centered hidden" id="player-names">
+    <div id="player-names" class="page centered hidden">
       <p>Insert players (Focus out or press enter to add another field)</p>
 
       <div id="player-inputs"></div>
 
-      <button class="button" id="submit-player-names">Build table</button>
-      <button class="button" id="enter-draft-timer">Draft timer</button>
+      <button id="submit-player-names" type="button" class="button">Build table</button>
+      <button id="enter-draft-timer" type="button" class="button">Draft timer</button>
     </div>
 
-    <div class="page hidden" id="tournament-table">
+    <div id="tournament-table" class="page hidden">
       <div id="suggested-matches">
         <span>Suggested matches:</span>
       </div>
       <div id="tables"></div>
     </div>
 
-    <div class="page centered hidden" id="draft-timer">
+    <div id="draft-timer" class="page centered hidden">
       <div id="draft-timer-settings">
         <label>
           <span>Number of rounds</span>
           <input id="round-number" placeholder="Input the number of rounds" />
         </label>
-        <button class="button" id="init-timer" href="#">Set</button>
+        <button id="init-timer" type="button" class="button" href="#">Set</button>
       </div>
 
       <div id="draft-timer-places">
@@ -75,20 +82,20 @@
         <p>Orientation: <span id="rounds-orientation"></span></p>
         <div id="clock"></div>
         <div id="timer-buttons">
-          <button class="button" id="start-timer">Start</button>
-          <button class="hidden button" id="restart-timer">Restart</button>
+          <button id="start-timer" type="button" class="button">Start</button>
+          <button id="restart-timer" type="button" class="hidden button">Restart</button>
         </div>
       </div>
 
       <div id="draft-finished">
         <p>Draft round should be finished by now</p>
-        <button class="button" id="new-draft-round">New Round</button>
-        <button class="button" id="return-home">Player List</button>
+        <button id="new-draft-round" type="button" class="button">New Round</button>
+        <button id="return-home" type="button" class="button">Player List</button>
       </div>
     </div>
 
     <div id="buttons">
-      <button class="button" id="home" href="#">Home</button>
+      <button id="home" type="button" class="button" href="#">Home</button>
     </div>
 
     <audio id="alarm-clock-sound" src="resources/sounds/alarmclock.ogg" />

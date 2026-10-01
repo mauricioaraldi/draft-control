@@ -6,7 +6,7 @@
    * @since 0.6.0
    */
   App.Sockets.Server = (function () {
-    var socket = io.connect('/server');
+    const socket = io.connect('/server');
 
     /**
      * Default function with all event bindings related to this module
@@ -45,9 +45,9 @@
       socket.on('setName', (data) => {
         App.Data = data;
 
-        //Adjust title
+        // Adjust title
         $('h1').text(App.Data.name);
-        $('h3').text(new Date(App.Data.date).toLocaleDateString('pt-BR')).show();
+        $('h2').text(new Date(App.Data.date).toLocaleDateString('pt-BR')).show();
       });
 
       /**
@@ -60,11 +60,11 @@
         App.Data = data;
 
         if (App.Data.name) {
-          //Adjust title
+          // Adjust title
           $('h1').text(App.Data.name);
-          $('h3').text(new Date(App.Data.date).toLocaleDateString('pt-BR')).show();
+          $('h2').text(new Date(App.Data.date).toLocaleDateString('pt-BR')).show();
           if (App.Data.players && App.Data.tournament) {
-            //Build tournament
+            // Build tournament
             App.server.drawTournamentTable();
           } else {
             App.server.initPlayers(App.Data.players);
@@ -113,6 +113,8 @@
      *
      * @author mauricio.araldi
      * @since 0.6.0
+     *
+     * @param {string} draftName New name of the draft
      */
     function setDraftName(draftName) {
       socket.emit('setName', {
@@ -135,6 +137,8 @@
      *
      * @author mauricio.araldi
      * @since 0.6.0
+     *
+     * @param {string[]} players Names of the players taking part in the draft
      */
     function setPlayers(players) {
       socket.emit('players', players);
@@ -155,6 +159,8 @@
      *
      * @author mauricio.araldi
      * @since 0.6.0
+     *
+     * @param {{playerId: string, playerScore: string, opponentId: string, opponentScore: string}} scores Result of a match, as typed in the table
      */
     function updateScore(scores) {
       socket.emit('updateScore', scores);
@@ -168,7 +174,7 @@
      */
     function sendId() {
       socket.emit('id', {
-        id: location.search.slice(location.search.indexOf('id') + 3, location.search.length),
+        id: location.search.slice(location.search.indexOf('id') + 3),
       });
     }
 
@@ -184,7 +190,7 @@
   })();
 
   // DOM Ready -- Initialize the module
-  $(function () {
+  $(() => {
     App.Sockets.Server.init();
     App.Sockets.Server.bindEvents();
   });

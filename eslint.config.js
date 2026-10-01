@@ -1,23 +1,32 @@
-import js from '@eslint/js';
+import { defineConfig } from 'eslint/config';
 import globals from 'globals';
-import prettier from 'eslint-config-prettier';
+import xo from 'eslint-config-xo';
 
-export default [
+export default defineConfig([
   {
-    ignores: ['node_modules/', 'public/resources/js/api/', 'public/resources/css/api/'],
+    ignores: ['node_modules/'],
   },
-  js.configs.recommended,
+  // Strict base rules (includes unicorn, import-x, n and jsdoc). Formatting is left to Prettier.
+  ...xo({ space: true, prettier: 'compat' }),
   {
+    files: ['**/*.js'],
     rules: {
       'no-unused-vars': ['error', { args: 'none' }],
+      'jsdoc/require-returns': 'error',
+      // Project conventions that take precedence over XO
+      'jsdoc/require-asterisk-prefix': ['error', 'always'],
+      'unicorn/filename-case': ['error', { cases: { camelCase: true, pascalCase: true } }],
+      'unicorn/prefer-global-this': 'off',
+      'unicorn/no-global-object-property-assignment': 'off',
+      'import-x/no-anonymous-default-export': 'off',
+      'unicorn/no-anonymous-default-export': 'off',
+      'unicorn/no-for-each': 'off',
     },
   },
   {
     // Server code (Node, ES modules). Shared state lives on `global` (see app/app.js).
     files: ['app/**/*.js', '*.js'],
     languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
       globals: {
         ...globals.node,
         app: 'writable',
@@ -32,7 +41,6 @@ export default [
     // Browser scripts loaded through <script> tags in public/*.html
     files: ['public/resources/js/custom/**/*.js'],
     languageOptions: {
-      ecmaVersion: 'latest',
       sourceType: 'script',
       globals: {
         ...globals.browser,
@@ -46,10 +54,7 @@ export default [
   {
     files: ['public/resources/js/objects/**/*.js'],
     languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
       globals: globals.browser,
     },
   },
-  prettier,
-];
+]);
