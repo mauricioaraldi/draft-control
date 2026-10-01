@@ -1,4 +1,4 @@
-(function ($, window) {
+(function (window) {
   /**
    * This module controls socket interactions
    *
@@ -77,8 +77,8 @@
   })();
 
   // DOM Ready -- Initialize the module
-  $(() => {
+  document.addEventListener('DOMContentLoaded', () => {
     App.Sockets.ServerHome.init();
     App.Sockets.ServerHome.bindEvents();
   });
-})(jQuery, window);
+})(window);

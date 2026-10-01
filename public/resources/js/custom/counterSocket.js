@@ -1,4 +1,4 @@
-(($, window) => {
+((window) => {
   /**
    * This module controls socket interactions
    *
@@ -23,7 +23,7 @@
        * @since 0.6.0
        */
       socket.on('players', (data) => {
-        $('#draftName').text(data.draft.name);
+        document.querySelector('#draftName').textContent = data.draft.name;
         document.title = `${data.draft.name} - ${baseTitle}`;
         App.counter.drawPlayers(data.draft.players);
       });
@@ -81,8 +81,8 @@
   })();
 
   // DOM Ready -- Initialize the module
-  $(() => {
+  document.addEventListener('DOMContentLoaded', () => {
     App.Sockets.counter.init();
     App.Sockets.counter.bindEvents();
   });
-})(jQuery, window);
+})(window);

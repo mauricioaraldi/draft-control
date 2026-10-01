@@ -43,8 +43,8 @@ App = {
      * @param {() => void} [noAction] Called when the user clicks "No"
      */
     confirmPopup(text, yesAction, noAction) {
-      yesAction = typeof yesAction === 'function' ? yesAction : $.noop;
-      noAction = typeof noAction === 'function' ? noAction : $.noop;
+      yesAction = typeof yesAction === 'function' ? yesAction : () => {};
+      noAction = typeof noAction === 'function' ? noAction : () => {};
 
       const confirm = new Noty({
         layout: 'center',
@@ -137,6 +137,50 @@ App = {
       }
 
       return times-- > 0 ? App.Utils.shuffle(array, times) : array;
+    },
+
+    /**
+     * Shows an element, even if it is hidden by CSS
+     *
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {HTMLElement} element Element to be shown
+     */
+    show(element) {
+      element.style.display = '';
+
+      if (getComputedStyle(element).display === 'none') {
+        element.style.display = 'block';
+      }
+    },
+
+    /**
+     * Hides an element
+     *
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {HTMLElement} element Element to be hidden
+     */
+    hide(element) {
+      element.style.display = 'none';
+    },
+
+    /**
+     * Toggles the visibility of an element
+     *
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {HTMLElement} element Element to be toggled
+     */
+    toggle(element) {
+      if (getComputedStyle(element).display === 'none') {
+        App.Utils.show(element);
+      } else {
+        App.Utils.hide(element);
+      }
     },
   },
 };

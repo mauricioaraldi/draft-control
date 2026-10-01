@@ -1,4 +1,4 @@
-(function ($, window) {
+(function (window) {
   /**
    * This module controls socket interactions
    *
@@ -46,8 +46,10 @@
         App.Data = data;
 
         // Adjust title
-        $('h1').text(App.Data.name);
-        $('h2').text(new Date(App.Data.date).toLocaleDateString('pt-BR')).show();
+        document.querySelector('h1').textContent = App.Data.name;
+        const dateElement = document.querySelector('h2');
+        dateElement.textContent = new Date(App.Data.date).toLocaleDateString('pt-BR');
+        dateElement.classList.remove('hidden');
       });
 
       /**
@@ -61,8 +63,10 @@
 
         if (App.Data.name) {
           // Adjust title
-          $('h1').text(App.Data.name);
-          $('h2').text(new Date(App.Data.date).toLocaleDateString('pt-BR')).show();
+          document.querySelector('h1').textContent = App.Data.name;
+          const dateElement = document.querySelector('h2');
+          dateElement.textContent = new Date(App.Data.date).toLocaleDateString('pt-BR');
+          dateElement.classList.remove('hidden');
           if (App.Data.players && App.Data.tournament) {
             // Build tournament
             App.server.drawTournamentTable();
@@ -83,7 +87,7 @@
       socket.on('players', (data) => {
         App.Data.players = data;
 
-        $(document).trigger('playersLoaded');
+        document.dispatchEvent(new CustomEvent('playersLoaded'));
       });
 
       /**
@@ -190,8 +194,8 @@
   })();
 
   // DOM Ready -- Initialize the module
-  $(() => {
+  document.addEventListener('DOMContentLoaded', () => {
     App.Sockets.Server.init();
     App.Sockets.Server.bindEvents();
   });
-})(jQuery, window);
+})(window);

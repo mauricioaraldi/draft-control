@@ -44,7 +44,6 @@ export default defineConfig([
       sourceType: 'script',
       globals: {
         ...globals.browser,
-        ...globals.jquery,
         io: 'readonly',
         Noty: 'readonly',
         App: 'writable',

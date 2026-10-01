@@ -1,10 +1,9 @@
 /**
  * Server controller
  *
- * @param {jQuery} $ The jQuery function
  * @param {Window} window The browser window
  */
-(($, window) => {
+((window) => {
   let decreaser;
 
   App.server = (() => {
@@ -22,8 +21,12 @@
        * @author mauricio.araldi
        * @since 0.5.0
        */
-      $(document).on('blur', '#player-inputs input:last-child', (ev) => {
-        const value = $(ev.currentTarget).val();
+      document.addEventListener('focusout', (ev) => {
+        if (!ev.target.matches('#player-inputs input:last-child')) {
+          return;
+        }
+
+        const { value } = ev.target;
 
         // If blured input doesn't have any value, return
         if (!value) {
@@ -39,10 +42,10 @@
        * @author mauricio.araldi
        * @since 0.6.0
        */
-      $('#submit-draft-name').on('click', (ev) => {
+      document.querySelector('#submit-draft-name').addEventListener('click', (ev) => {
         setLoading(true);
 
-        const name = $('#draft-name > input').val();
+        const name = document.querySelector('#draft-name > input').value;
 
         App.Sockets.Server.setDraftName(name);
 
@@ -57,9 +60,9 @@
        * @author mauricio.araldi
        * @since 0.6.0
        */
-      $('#draft-name > input').on('keyup', (ev) => {
-        if (ev.which === 13) {
-          $('#submit-draft-name').click();
+      document.querySelector('#draft-name > input').addEventListener('keyup', (ev) => {
+        if (ev.key === 'Enter') {
+          document.querySelector('#submit-draft-name').click();
         }
       });
 
@@ -69,13 +72,9 @@
        * @author mauricio.araldi
        * @since 0.5.0
        */
-      $('#submit-player-names').on('click', (ev) => {
+      document.querySelector('#submit-player-names').addEventListener('click', (ev) => {
         ev.preventDefault();
-        if (
-          $('#player-names input').filter(function () {
-            return $(this).val().length > 0;
-          }).length > 1
-        ) {
+        if (countFilledPlayerNames() > 1) {
           setLoading(true);
 
           try {
@@ -87,14 +86,18 @@
           /**
            * When players are loaded, build tournament tables
            */
-          $(document).on('playersLoaded', () => {
-            changeScreen('table');
+          document.addEventListener(
+            'playersLoaded',
+            () => {
+              changeScreen('table');
 
-            // Build Tournament
-            App.Sockets.Server.getTournamentTable();
+              // Build Tournament
+              App.Sockets.Server.getTournamentTable();
 
-            setLoading(false);
-          });
+              setLoading(false);
+            },
+            { once: true }
+          );
         } else {
           App.Utils.errorPopup('Please input at least 2 non-empty player names.');
         }
@@ -106,19 +109,23 @@
        * @author mauricio.araldi
        * @since 0.5.0
        */
-      $(document).on('blur', '.score', (ev) => {
-        const playerId = $(ev.currentTarget).closest('.player-table').attr('data-player-id');
-        const opponentId = $(ev.currentTarget).closest('tr').attr('data-opp-id');
-        const playerScore = $(ev.currentTarget).closest('tr').find('.player-score').text();
-        const opponentScore = $(ev.currentTarget).closest('tr').find('.opp-score').text();
+      document.addEventListener('focusout', (ev) => {
+        const score = ev.target.closest('.score');
+
+        if (!score) {
+          return;
+        }
+
+        const row = score.closest('tr');
+        const { playerId } = score.closest('.player-table').dataset;
+        const opponentId = row.dataset.oppId;
+        const playerScore = row.querySelector('.player-score').textContent;
+        const opponentScore = row.querySelector('.opp-score').textContent;
 
         // When changing the score of a player, auto switch to the scores
         // of opponent on the same match on blur
-        if ($(ev.currentTarget).hasClass('player-score')) {
-          return $('.player-table[data-player-index=' + playerId + ']')
-            .find('tr[data-opp-index=' + opponentId + ']')
-            .find('.opp-score')
-            .focus();
+        if (score.classList.contains('player-score')) {
+          return row.querySelector('.opp-score').focus();
         }
 
         App.Sockets.Server.updateScore({
@@ -136,8 +143,14 @@
        * @author mauricio.araldi
        * @since 0.5.0
        */
-      $(document).on('click', '.opp-name', (ev) => {
-        $(ev.currentTarget).siblings('.player-score').focus();
+      document.addEventListener('click', (ev) => {
+        const oppName = ev.target.closest('.opp-name');
+
+        if (!oppName) {
+          return;
+        }
+
+        oppName.parentElement.querySelector('.player-score').focus();
       });
 
       /**
@@ -146,7 +159,7 @@
        * @author mauricio.fiorest
        * @since 0.9.0
        */
-      $('#home').on('click', (ev) => {
+      document.querySelector('#home').addEventListener('click', (ev) => {
         location.assign('/server');
       });
 
@@ -156,12 +169,8 @@
        * @author mauricio.araldi
        * @since 0.5.0
        */
-      $('#enter-draft-timer').on('click', (ev) => {
-        if (
-          $('#player-names input').filter(function () {
-            return $(this).val().length > 0;
-          }).length > 1
-        ) {
+      document.querySelector('#enter-draft-timer').addEventListener('click', (ev) => {
+        if (countFilledPlayerNames() > 1) {
           try {
             buildPlayers();
           } catch (error) {
@@ -171,14 +180,18 @@
           /**
            * Once players are loaded
            */
-          $(document).on('playersLoaded', () => {
-            sortPlayerPlaces();
-            App.Data.values.currentOrientation = 'Right';
+          document.addEventListener(
+            'playersLoaded',
+            () => {
+              sortPlayerPlaces();
+              App.Data.values.currentOrientation = 'Right';
 
-            changeScreen('timer');
+              changeScreen('timer');
 
-            setLoading(false);
-          });
+              setLoading(false);
+            },
+            { once: true }
+          );
         } else {
           App.Utils.errorPopup('Please input at least 2 non-empty player names.');
         }
@@ -190,8 +203,8 @@
        * @author mauricio.araldi
        * @since 0.5.0
        */
-      $('#init-timer').on('click', (ev) => {
-        const rounds = Number($('#round-number').val());
+      document.querySelector('#init-timer').addEventListener('click', (ev) => {
+        const rounds = Number(document.querySelector('#round-number').value);
         const time = Math.ceil(rounds * App.Config.draftRoundTime);
 
         App.Data.values.roundsLeft = rounds;
@@ -200,9 +213,10 @@
 
         changeScreen('startTimer');
 
-        $('#clock').text(App.Data.values.draftTimer);
-        $('#rounds-left-timer').text(App.Data.values.roundsLeft);
-        $('#rounds-orientation').text(App.Data.values.currentOrientation);
+        document.querySelector('#clock').textContent = App.Data.values.draftTimer;
+        document.querySelector('#rounds-left-timer').textContent = App.Data.values.roundsLeft;
+        document.querySelector('#rounds-orientation').textContent =
+          App.Data.values.currentOrientation;
       });
 
       /**
@@ -211,14 +225,14 @@
        * @author mauricio.araldi
        * @since 0.5.0
        */
-      $('#start-timer').on('click', (ev) => {
+      document.querySelector('#start-timer').addEventListener('click', (ev) => {
         startRoundSound();
 
         setTimeout(() => {
           changeScreen('timerRunning');
 
           decreaser = setInterval(() => {
-            $('#clock').text(--App.Data.values.currentTime);
+            document.querySelector('#clock').textContent = --App.Data.values.currentTime;
             timeIndicatorSound(App.Data.values.currentTime);
 
             if (App.Data.values.currentTime !== 0) {
@@ -227,8 +241,8 @@
 
             clearInterval(decreaser);
 
-            $('#alarm-clock-sound')[0].play();
-            $('body').addClass('alarm-playing');
+            document.querySelector('#alarm-clock-sound').play();
+            document.body.classList.add('alarm-playing');
           }, 1000);
         }, 500);
       });
@@ -239,10 +253,12 @@
        * @author mauricio.araldi
        * @since 0.5.0
        */
-      $('#restart-timer').on('click', (ev) => {
-        $('body').removeClass('alarm-playing');
-        $('#alarm-clock-sound')[0].pause();
-        $('#alarm-clock-sound')[0].currentTime = 0;
+      document.querySelector('#restart-timer').addEventListener('click', (ev) => {
+        const alarmClockSound = document.querySelector('#alarm-clock-sound');
+
+        document.body.classList.remove('alarm-playing');
+        alarmClockSound.pause();
+        alarmClockSound.currentTime = 0;
 
         clearInterval(decreaser);
 
@@ -260,12 +276,13 @@
 
         App.Data.values.currentTime = App.Data.values.draftTimer;
 
-        $('#clock').text(App.Data.values.currentTime);
-        $('#rounds-left-timer').text(--App.Data.values.roundsLeft);
-        $('#rounds-orientation').text(App.Data.values.currentOrientation);
+        document.querySelector('#clock').textContent = App.Data.values.currentTime;
+        document.querySelector('#rounds-left-timer').textContent = --App.Data.values.roundsLeft;
+        document.querySelector('#rounds-orientation').textContent =
+          App.Data.values.currentOrientation;
 
         if (App.Data.values.roundsLeft === 0) {
-          $(document).trigger('draft-timer-finished');
+          document.dispatchEvent(new CustomEvent('draft-timer-finished'));
         }
       });
 
@@ -275,7 +292,7 @@
        * @author mauricio.araldi
        * @since 0.5.0
        */
-      $('#new-draft-round').on('click', (ev) => {
+      document.querySelector('#new-draft-round').addEventListener('click', (ev) => {
         App.Data.values.currentOrientation =
           App.Data.values.currentOrientation === 'Right' ? 'Left' : 'Right';
         changeScreen('newDraftRound');
@@ -287,7 +304,7 @@
        * @author mauricio.araldi
        * @since 0.5.0
        */
-      $('#return-home').on('click', (ev) => {
+      document.querySelector('#return-home').addEventListener('click', (ev) => {
         App.Data.players = {};
         changeScreen('players');
       });
@@ -298,7 +315,7 @@
        * @author mauricio.araldi
        * @since 0.5.0
        */
-      $(document).on('draft-timer-finished', (ev) => {
+      document.addEventListener('draft-timer-finished', (ev) => {
         changeScreen('timerFinished');
       });
     }
@@ -326,7 +343,7 @@
      */
     function initPlayers(playersData) {
       changeScreen('players');
-      if ($('#player-inputs input').length === 0) {
+      if (!document.querySelector('#player-inputs input')) {
         createPlayerInput();
       }
     }
@@ -359,8 +376,8 @@
       const players = [];
 
       // Runs trought the inputs with player names
-      $('#player-names input').each((index, input) => {
-        const playerName = $(input).val();
+      document.querySelectorAll('#player-names input').forEach((input) => {
+        const playerName = input.value;
 
         // Prevents blank names
         if (!playerName) {
@@ -397,76 +414,76 @@
      */
     function changeScreen(screen) {
       // Reset everything
-      $('#buttons').addClass('hidden');
-      $('#buttons > #load').addClass('hidden');
+      document.querySelector('#buttons').classList.add('hidden');
+      document.querySelector('#buttons > #load')?.classList.add('hidden');
 
-      $('#draft-name').addClass('hidden');
+      document.querySelector('#draft-name').classList.add('hidden');
 
-      $('#draft-timer').addClass('hidden');
-      $('#draft-timer > #draft-finished').addClass('hidden');
-      $('#draft-timer > #draft-timer-runner').addClass('hidden');
-      $('#draft-timer > #draft-timer-settings').addClass('hidden');
-      $('#draft-timer > #draft-timer-places').addClass('hidden');
-      $('#draft-timer #restart-timer').addClass('hidden');
-      $('#draft-timer #start-timer').addClass('hidden');
+      document.querySelector('#draft-timer').classList.add('hidden');
+      document.querySelector('#draft-timer > #draft-finished').classList.add('hidden');
+      document.querySelector('#draft-timer > #draft-timer-runner').classList.add('hidden');
+      document.querySelector('#draft-timer > #draft-timer-settings').classList.add('hidden');
+      document.querySelector('#draft-timer > #draft-timer-places').classList.add('hidden');
+      document.querySelector('#draft-timer #restart-timer').classList.add('hidden');
+      document.querySelector('#draft-timer #start-timer').classList.add('hidden');
 
-      $('#player-names').addClass('hidden');
+      document.querySelector('#player-names').classList.add('hidden');
 
-      $('#tournament-table').addClass('hidden');
+      document.querySelector('#tournament-table').classList.add('hidden');
 
       // Shows what must be shown
       switch (screen) {
         case 'draftName': {
-          $('#draft-name').removeClass('hidden');
-          $('#buttons').removeClass('hidden');
-          $('#buttons > #load').removeClass('hidden');
+          document.querySelector('#draft-name').classList.remove('hidden');
+          document.querySelector('#buttons').classList.remove('hidden');
+          document.querySelector('#buttons > #load')?.classList.remove('hidden');
           break;
         }
 
         case 'players': {
-          $('#buttons').removeClass('hidden');
-          $('#buttons > #load').removeClass('hidden');
-          $('#player-names').removeClass('hidden');
+          document.querySelector('#buttons').classList.remove('hidden');
+          document.querySelector('#buttons > #load')?.classList.remove('hidden');
+          document.querySelector('#player-names').classList.remove('hidden');
           break;
         }
 
         case 'table': {
-          $('#buttons').removeClass('hidden');
-          $('#buttons > #load').removeClass('hidden');
-          $('#tournament-table').removeClass('hidden');
+          document.querySelector('#buttons').classList.remove('hidden');
+          document.querySelector('#buttons > #load')?.classList.remove('hidden');
+          document.querySelector('#tournament-table').classList.remove('hidden');
           break;
         }
 
         case 'timer': {
-          $('#draft-timer').removeClass('hidden');
-          $('#draft-timer > #draft-timer-settings').removeClass('hidden');
-          $('#draft-timer > #draft-timer-places').removeClass('hidden');
+          document.querySelector('#draft-timer').classList.remove('hidden');
+          document.querySelector('#draft-timer > #draft-timer-settings').classList.remove('hidden');
+          document.querySelector('#draft-timer > #draft-timer-places').classList.remove('hidden');
           break;
         }
 
         case 'startTimer': {
-          $('#draft-timer').removeClass('hidden');
-          $('#draft-timer > #draft-timer-runner').removeClass('hidden');
-          $('#draft-timer #start-timer').removeClass('hidden');
+          document.querySelector('#draft-timer').classList.remove('hidden');
+          document.querySelector('#draft-timer > #draft-timer-runner').classList.remove('hidden');
+          document.querySelector('#draft-timer #start-timer').classList.remove('hidden');
           break;
         }
 
         case 'timerRunning': {
-          $('#draft-timer').removeClass('hidden');
-          $('#draft-timer > #draft-timer-runner').removeClass('hidden');
-          $('#draft-timer #restart-timer').removeClass('hidden');
+          document.querySelector('#draft-timer').classList.remove('hidden');
+          document.querySelector('#draft-timer > #draft-timer-runner').classList.remove('hidden');
+          document.querySelector('#draft-timer #restart-timer').classList.remove('hidden');
           break;
         }
 
         case 'newDraftRound': {
-          $('#draft-timer').removeClass('hidden');
-          $('#draft-timer > #draft-timer-settings').removeClass('hidden');
+          document.querySelector('#draft-timer').classList.remove('hidden');
+          document.querySelector('#draft-timer > #draft-timer-settings').classList.remove('hidden');
           break;
         }
 
         case 'timerFinished': {
-          $('#draft-timer').removeClass('hidden');
-          $('#draft-timer > #draft-finished').removeClass('hidden');
+          document.querySelector('#draft-timer').classList.remove('hidden');
+          document.querySelector('#draft-timer > #draft-finished').classList.remove('hidden');
           break;
         }
 
@@ -485,18 +502,19 @@
      * @since 0.5.0
      */
     function createPlayerInput() {
-      const playerNumber = $('#player-inputs input').length + 1;
-      const newInput = $('<input>');
+      const playerNumber = document.querySelectorAll('#player-inputs input').length + 1;
+      const newInput = document.createElement('input');
 
-      newInput.attr('id', 'player-' + playerNumber).attr('placeholder', 'Player ' + playerNumber);
+      newInput.id = 'player-' + playerNumber;
+      newInput.placeholder = 'Player ' + playerNumber;
 
-      newInput.on('keypress', (ev) => {
-        if (ev.which === 13) {
-          $(ev.currentTarget).blur();
+      newInput.addEventListener('keypress', (ev) => {
+        if (ev.key === 'Enter') {
+          ev.currentTarget.blur();
         }
       });
 
-      $('#player-inputs').append(newInput);
+      document.querySelector('#player-inputs').append(newInput);
 
       newInput.focus();
     }
@@ -509,20 +527,20 @@
      * @since 0.5.0
      */
     function startRoundSound() {
-      $('#hi-beep-sound')[0].play();
+      document.querySelector('#hi-beep-sound').play();
       setTimeout(() => {
-        $('#hi-beep-sound')[0].pause();
-        $('#hi-beep-sound')[0].currentTime = 0;
+        document.querySelector('#hi-beep-sound').pause();
+        document.querySelector('#hi-beep-sound').currentTime = 0;
 
-        $('#hi-beep-sound')[0].play();
+        document.querySelector('#hi-beep-sound').play();
         setTimeout(() => {
-          $('#hi-beep-sound')[0].pause();
-          $('#hi-beep-sound')[0].currentTime = 0;
+          document.querySelector('#hi-beep-sound').pause();
+          document.querySelector('#hi-beep-sound').currentTime = 0;
 
-          $('#chime-sound')[0].play();
+          document.querySelector('#chime-sound').play();
           setTimeout(() => {
-            $('#chime-sound')[0].pause();
-            $('#chime-sound')[0].currentTime = 0;
+            document.querySelector('#chime-sound').pause();
+            document.querySelector('#chime-sound').currentTime = 0;
           }, 1000);
         }, 500);
       }, 500);
@@ -540,25 +558,25 @@
     function timeIndicatorSound(time) {
       switch (time) {
         case App.Config.firstNotificationBeepTime: {
-          $('#hi-beep-sound')[0].play();
+          document.querySelector('#hi-beep-sound').play();
           setTimeout(() => {
-            $('#hi-beep-sound')[0].pause();
-            $('#hi-beep-sound')[0].currentTime = 0;
+            document.querySelector('#hi-beep-sound').pause();
+            document.querySelector('#hi-beep-sound').currentTime = 0;
           }, 500);
 
           break;
         }
 
         case App.Config.secondNotificationBeepTime: {
-          $('#lo-beep-sound')[0].play();
+          document.querySelector('#lo-beep-sound').play();
           setTimeout(() => {
-            $('#lo-beep-sound')[0].pause();
-            $('#lo-beep-sound')[0].currentTime = 0;
+            document.querySelector('#lo-beep-sound').pause();
+            document.querySelector('#lo-beep-sound').currentTime = 0;
 
-            $('#hi-beep-sound')[0].play();
+            document.querySelector('#hi-beep-sound').play();
             setTimeout(() => {
-              $('#hi-beep-sound')[0].pause();
-              $('#hi-beep-sound')[0].currentTime = 0;
+              document.querySelector('#hi-beep-sound').pause();
+              document.querySelector('#hi-beep-sound').currentTime = 0;
             }, 500);
           }, 500);
 
@@ -566,20 +584,20 @@
         }
 
         case App.Config.thirdNotificationBeepTime: {
-          $('#lo-beep-sound')[0].play();
+          document.querySelector('#lo-beep-sound').play();
           setTimeout(() => {
-            $('#lo-beep-sound')[0].pause();
-            $('#lo-beep-sound')[0].currentTime = 0;
+            document.querySelector('#lo-beep-sound').pause();
+            document.querySelector('#lo-beep-sound').currentTime = 0;
 
-            $('#lo-beep-sound')[0].play();
+            document.querySelector('#lo-beep-sound').play();
             setTimeout(() => {
-              $('#lo-beep-sound')[0].pause();
-              $('#lo-beep-sound')[0].currentTime = 0;
+              document.querySelector('#lo-beep-sound').pause();
+              document.querySelector('#lo-beep-sound').currentTime = 0;
 
-              $('#hi-beep-sound')[0].play();
+              document.querySelector('#hi-beep-sound').play();
               setTimeout(() => {
-                $('#hi-beep-sound')[0].pause();
-                $('#hi-beep-sound')[0].currentTime = 0;
+                document.querySelector('#hi-beep-sound').pause();
+                document.querySelector('#hi-beep-sound').currentTime = 0;
               }, 500);
             }, 500);
           }, 500);
@@ -598,11 +616,13 @@
      * @since 0.6.0
      */
     function drawTournamentTable() {
+      const tables = document.querySelector('#tables');
+
       changeScreen('table');
-      $('#tables').empty();
+      tables.replaceChildren();
 
       getPlayersInOrder().forEach((player, index) => {
-        $('#tables').append(buildPlayerTable(player.id, index + 1));
+        tables.append(buildPlayerTable(player.id, index + 1));
       });
 
       setLoading(false);
@@ -617,32 +637,35 @@
      *
      * @param {string} playerId ID of the player whose table is built
      * @param {number} position Current ranking position of the player
-     * @returns {jQuery} The player's table element
+     * @returns {HTMLTableElement} The player's table element
      */
     function buildPlayerTable(playerId, position) {
       const player = App.Data.players[playerId];
       const playerTable = App.Data.tournament[playerId];
-      const htmlTable = $('<table class="player-table">');
-      const positionTr = $('<tr class="position">');
-      const positionTd = $('<td colspan="5">').text(position + 'º');
+      const htmlTable = createElement('table', 'player-table');
+      const positionTr = createElement('tr', 'position');
+      const positionTd = createElement('td', '', position + 'º');
       let isCreatePlayerName = true;
       let totalGamesWon = 0;
       let totalGamesLost = 0;
       let totalMatchesWon = 0;
       let totalMatchesLost = 0;
 
-      htmlTable.attr('data-player-id', playerId).append(positionTr.append(positionTd));
+      positionTd.colSpan = 5;
+      positionTr.append(positionTd);
+      htmlTable.dataset.playerId = playerId;
+      htmlTable.append(positionTr);
 
       App.Data.players[playerId].matchesWon = 0;
       App.Data.players[playerId].matchesLost = 0;
 
       // Runs all the players to build the matches of a player
       for (const [opponentId, opponent] of Object.entries(App.Data.players)) {
-        const tr = $('<tr>');
-        const playerScore = $('<td class="score player-score" contenteditable>');
-        const divider = $('<td class="divider">').text('X');
-        const oppScore = $('<td class="score opp-score" contenteditable>');
-        const oppName = $('<td class="opp-name">').text(opponent.id);
+        const tr = createElement('tr');
+        const playerScore = createElement('td', 'score player-score');
+        const divider = createElement('td', 'divider', 'X');
+        const oppScore = createElement('td', 'score opp-score');
+        const oppName = createElement('td', 'opp-name', opponent.id);
 
         // If the opponent is the same of player, doesn't create match
         if (player.id === opponent.id) {
@@ -650,23 +673,27 @@
         }
 
         // Data opp index
-        tr.attr('data-opp-id', opponentId);
+        tr.dataset.oppId = opponentId;
+        playerScore.contentEditable = 'true';
+        oppScore.contentEditable = 'true';
 
         if (isCreatePlayerName) {
-          tr.append(
-            $('<td class="player-name">')
-              .attr('rowspan', Object.keys(App.Data.players).length)
-              .append($('<p>').text(player.id))
-              .append($('<p class="player-games-score">'))
-              .append($('<p class="player-matches-score">'))
+          const playerName = createElement('td', 'player-name');
+
+          playerName.rowSpan = Object.keys(App.Data.players).length;
+          playerName.append(
+            createElement('p', '', player.id),
+            createElement('p', 'player-games-score'),
+            createElement('p', 'player-matches-score')
           );
+          tr.append(playerName);
           isCreatePlayerName = false;
         }
 
         // Adjust scores
         const { matchesWon, matchesLost } = playerTable[opponentId];
-        playerScore.text(matchesWon || (matchesLost ? '0' : ''));
-        oppScore.text(matchesLost || (matchesWon ? '0' : ''));
+        playerScore.textContent = matchesWon || (matchesLost ? '0' : '');
+        oppScore.textContent = matchesLost || (matchesWon ? '0' : '');
         totalMatchesWon += matchesWon ? Number(matchesWon) : 0;
         totalMatchesLost += matchesLost ? Number(matchesLost) : 0;
 
@@ -675,12 +702,12 @@
         totalGamesLost += Math.trunc(matchesLost / 2);
 
         if (matchesWon > 1 && matchesWon > matchesLost) {
-          tr.addClass('win');
+          tr.classList.add('win');
         } else if (matchesLost > 1 && matchesLost > matchesWon) {
-          tr.addClass('loss');
+          tr.classList.add('loss');
         }
 
-        tr.append(playerScore).append(divider).append(oppScore).append(oppName);
+        tr.append(playerScore, divider, oppScore, oppName);
 
         htmlTable.append(tr);
       }
@@ -692,16 +719,10 @@
       App.Data.players[playerId].matchesWon = totalMatchesWon;
       App.Data.players[playerId].matchesLost = totalMatchesLost;
 
-      htmlTable
-        .find('.player-games-score')
-        .text(
-          `G: ${App.Data.players[playerId].gamesWon}/${App.Data.players[playerId].gamesWon + App.Data.players[playerId].gamesLost}`
-        );
-      htmlTable
-        .find('.player-matches-score')
-        .text(
-          `M: ${App.Data.players[playerId].matchesWon}/${App.Data.players[playerId].matchesWon + App.Data.players[playerId].matchesLost}`
-        );
+      htmlTable.querySelector('.player-games-score').textContent =
+        `G: ${App.Data.players[playerId].gamesWon}/${App.Data.players[playerId].gamesWon + App.Data.players[playerId].gamesLost}`;
+      htmlTable.querySelector('.player-matches-score').textContent =
+        `M: ${App.Data.players[playerId].matchesWon}/${App.Data.players[playerId].matchesWon + App.Data.players[playerId].matchesLost}`;
 
       return htmlTable;
     }
@@ -717,13 +738,14 @@
       // Shuffle three times
       const order = App.Utils.shuffle(Object.values(App.Data.players), 3);
 
+      const placesElement = document.querySelector('#draft-timer-places > span');
+      let places = placesElement.textContent;
+
       order.forEach((player) => {
-        $('#draft-timer-places > span').text(
-          `${$('#draft-timer-places > span').text()} ${player.id}, `
-        );
+        places += ` ${player.id}, `;
       });
 
-      $('#draft-timer-places > span').text($('#draft-timer-places > span').text().slice(0, -2));
+      placesElement.textContent = places.slice(0, -2);
     }
 
     /**
@@ -778,11 +800,55 @@
      */
     function setLoading(isLoading) {
       if (!isLoading) {
-        $('#loader').remove();
+        document.querySelector('#loader')?.remove();
         return;
       }
 
-      $('body').append($('<div id="loader">Loading</div>'));
+      const loader = createElement('div', '', 'Loading');
+
+      loader.id = 'loader';
+      document.body.append(loader);
+    }
+
+    /**
+     * Counts how many player name inputs are filled
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @returns {number} Amount of non-empty player names
+     */
+    function countFilledPlayerNames() {
+      return [...document.querySelectorAll('#player-names input')].filter(
+        (input) => input.value.length > 0
+      ).length;
+    }
+
+    /**
+     * Creates an HTML element
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {string} tagName HTML tag to create, like 'td' or 'p'
+     * @param {string} [className] Space-separated CSS classes to add
+     * @param {string|number} [textContent] Text shown inside the element
+     * @returns {HTMLElement} The created element
+     */
+    function createElement(tagName, className, textContent) {
+      const element = document.createElement(tagName);
+
+      if (className) {
+        element.className = className;
+      }
+
+      if (textContent !== undefined) {
+        element.textContent = textContent;
+      }
+
+      return element;
     }
 
     /**
@@ -795,10 +861,12 @@
      * @param {string[]} data Suggested matches received from server
      */
     function drawSuggestedMatches(data) {
-      $('#suggested-matches > p').remove();
+      const suggestedMatches = document.querySelector('#suggested-matches');
+
+      suggestedMatches.querySelectorAll(':scope > p').forEach((match) => match.remove());
 
       data.forEach((suggestedMatch) => {
-        $('#suggested-matches').append($('<p>').text(suggestedMatch));
+        suggestedMatches.append(createElement('p', '', suggestedMatch));
       });
     }
 
@@ -813,8 +881,8 @@
   })();
 
   // DOM Ready -- initializes the module
-  $(() => {
+  document.addEventListener('DOMContentLoaded', () => {
     App.server.bindEvents();
     App.server.load();
   });
-})(jQuery, window);
+})(window);

@@ -1,10 +1,9 @@
 /**
  * Counter controller
  *
- * @param {jQuery} $ The jQuery function
  * @param {Window} window The browser window
  */
-(($, window) => {
+((window) => {
   App.counter = (() => {
     let moveDelta = 0;
     let playerBeingEdited = null;
@@ -24,11 +23,13 @@
        * @author mauricio.araldi
        * @since 0.10.0
        */
-      $('.buttons > button').on('click', (ev) => {
-        const value = Number($(ev.target).text());
-        const playerPosition = $(ev.target).closest('.controls').data('player-position');
+      document.querySelectorAll('.buttons > button').forEach((button) => {
+        button.addEventListener('click', (ev) => {
+          const value = Number(ev.target.textContent);
+          const { playerPosition } = ev.target.closest('.controls').dataset;
 
-        addPlayerHp(playerPosition, value);
+          addPlayerHp(playerPosition, value);
+        });
       });
 
       /**
@@ -37,8 +38,8 @@
        * @author mauricio.araldi
        * @since 0.6.0
        */
-      $('#openMenu').on('click', (ev) => {
-        $('#menu').toggle();
+      document.querySelector('#openMenu').addEventListener('click', (ev) => {
+        App.Utils.toggle(document.querySelector('#menu'));
       });
 
       /**
@@ -47,8 +48,8 @@
        * @author mauricio.araldi
        * @since 0.7.0
        */
-      $('#openDieMenu').on('click', (ev) => {
-        $('#dieMenu').toggle();
+      document.querySelector('#openDieMenu').addEventListener('click', (ev) => {
+        App.Utils.toggle(document.querySelector('#dieMenu'));
       });
 
       /**
@@ -57,8 +58,8 @@
        * @author mauricio.araldi
        * @since 0.7.0
        */
-      $('#closeMenu').on('click', (ev) => {
-        $('#menu').toggle();
+      document.querySelector('#closeMenu').addEventListener('click', (ev) => {
+        App.Utils.toggle(document.querySelector('#menu'));
       });
 
       /**
@@ -67,10 +68,12 @@
        * @author mauricio.araldi
        * @since 0.6.0
        */
-      $('.hp').on('mousedown', (ev) => {
-        App.Keys.mouseRight = true;
+      document.querySelectorAll('.hp').forEach((hp) => {
+        hp.addEventListener('mousedown', (ev) => {
+          App.Keys.mouseRight = true;
 
-        playerBeingEdited = $(ev.target).closest('.player');
+          playerBeingEdited = ev.target.dataset.playerPosition;
+        });
       });
 
       /**
@@ -79,7 +82,7 @@
        * @author mauricio.araldi
        * @since 0.6.0
        */
-      $(document).on('mouseup', (ev) => {
+      document.addEventListener('mouseup', (ev) => {
         App.Keys.mouseRight = false;
       });
 
@@ -89,13 +92,15 @@
        * @author mauricio.araldi
        * @since 0.7.0
        */
-      $('#dieMenu > button').on('click', (ev) => {
-        const sides = Number($(ev.target).text());
-        const randomNumber = Math.floor(Math.random() * sides) + 1;
+      document.querySelectorAll('#dieMenu > button').forEach((button) => {
+        button.addEventListener('click', (ev) => {
+          const sides = Number(ev.target.textContent);
+          const randomNumber = Math.floor(Math.random() * sides) + 1;
 
-        App.Utils.successPopup(`Rolled ${randomNumber}`);
+          App.Utils.successPopup(`Rolled ${randomNumber}`);
 
-        $('#dieMenu').toggle();
+          App.Utils.toggle(document.querySelector('#dieMenu'));
+        });
       });
 
       /**
@@ -104,10 +109,16 @@
        * @author mauricio.araldi
        * @since 0.6.0
        */
-      $('.hp').on('touchstart', (ev) => {
-        App.Keys.touch = true;
+      document.querySelectorAll('.hp').forEach((hp) => {
+        hp.addEventListener(
+          'touchstart',
+          (ev) => {
+            App.Keys.touch = true;
 
-        playerBeingEdited = $(ev.target).closest('.player');
+            playerBeingEdited = ev.target.dataset.playerPosition;
+          },
+          { passive: true }
+        );
       });
 
       /**
@@ -116,10 +127,14 @@
        * @author mauricio.araldi
        * @since 0.6.0
        */
-      $(document).on('touchend', (ev) => {
-        App.Keys.touch = false;
-        lastScreenY = null;
-      });
+      document.addEventListener(
+        'touchend',
+        (ev) => {
+          App.Keys.touch = false;
+          lastScreenY = null;
+        },
+        { passive: true }
+      );
 
       /**
        * When mouse moves
@@ -127,12 +142,12 @@
        * @author mauricio.araldi
        * @since 0.6.0
        */
-      $(document).on('mousemove', (ev) => {
+      document.addEventListener('mousemove', (ev) => {
         if (!playerBeingEdited || !App.Keys.mouseRight) {
           return;
         }
 
-        moveDelta += ev.originalEvent.movementY;
+        moveDelta += ev.movementY;
 
         if (moveDelta > App.Config.addHpDelta) {
           moveDelta -= App.Config.addHpDelta;
@@ -149,31 +164,35 @@
        * @author mauricio.araldi
        * @since 0.6.0
        */
-      $(document).on('touchmove', (ev) => {
-        if (!App.Keys.touch) {
-          return;
-        }
+      document.addEventListener(
+        'touchmove',
+        (ev) => {
+          if (!App.Keys.touch) {
+            return;
+          }
 
-        if (lastScreenY === null) {
-          lastScreenY = ev.originalEvent.changedTouches[0].screenY;
-          return;
-        }
+          if (lastScreenY === null) {
+            lastScreenY = ev.changedTouches[0].screenY;
+            return;
+          }
 
-        if (!playerBeingEdited) {
-          return;
-        }
+          if (!playerBeingEdited) {
+            return;
+          }
 
-        moveDelta += ev.originalEvent.changedTouches[0].screenY - lastScreenY;
-        lastScreenY = ev.originalEvent.changedTouches[0].screenY;
+          moveDelta += ev.changedTouches[0].screenY - lastScreenY;
+          lastScreenY = ev.changedTouches[0].screenY;
 
-        if (moveDelta > App.Config.addHpDelta) {
-          moveDelta -= App.Config.addHpDelta;
-          addPlayerHp(playerBeingEdited, -1);
-        } else if (moveDelta < -App.Config.addHpDelta) {
-          moveDelta += App.Config.addHpDelta;
-          addPlayerHp(playerBeingEdited, 1);
-        }
-      });
+          if (moveDelta > App.Config.addHpDelta) {
+            moveDelta -= App.Config.addHpDelta;
+            addPlayerHp(playerBeingEdited, -1);
+          } else if (moveDelta < -App.Config.addHpDelta) {
+            moveDelta += App.Config.addHpDelta;
+            addPlayerHp(playerBeingEdited, 1);
+          }
+        },
+        { passive: true }
+      );
 
       /**
        * Ends the game
@@ -181,44 +200,51 @@
        * @author mauricio.araldi
        * @since 0.6.0
        */
-      $('#endGame').on('click', (ev) => {
-        const playerOne = $('.name:first').val();
-        const playerTwo = $('.name:last').val();
-        const buttonOne = $('<button>').text(playerOne);
-        const buttonTwo = $('<button>').text(playerTwo);
-        const cancelButton = $('<button>').text('Cancel');
+      document.querySelector('#endGame').addEventListener('click', (ev) => {
+        const playerNames = [...document.querySelectorAll('.name')];
+        const playerOne = playerNames[0].value;
+        const playerTwo = playerNames.at(-1).value;
+        const whoWonMenu = document.querySelector('#whoWonMenu');
+        const buttonOne = document.createElement('button');
+        const buttonTwo = document.createElement('button');
+        const cancelButton = document.createElement('button');
+
+        buttonOne.textContent = playerOne;
+        buttonTwo.textContent = playerTwo;
+        cancelButton.textContent = 'Cancel';
 
         if (playerOne === playerTwo) {
           App.Utils.errorPopup('Os jogadores não podem ter o mesmo nome');
-          $('#menu').toggle();
+          App.Utils.toggle(document.querySelector('#menu'));
           return;
         }
 
-        $('#whoWonMenu').show().find('button').remove();
+        App.Utils.show(whoWonMenu);
+        whoWonMenu.querySelectorAll('button').forEach((button) => button.remove());
 
-        buttonOne.on('click', () => {
+        buttonOne.addEventListener('click', () => {
           App.Sockets.counter.endGame({
             winner: playerOne,
             loser: playerTwo,
           });
-          $('#reset').click();
+          document.querySelector('#reset').click();
           cancelButton.click();
         });
 
-        buttonTwo.on('click', () => {
+        buttonTwo.addEventListener('click', () => {
           App.Sockets.counter.endGame({
             winner: playerTwo,
             loser: playerOne,
           });
-          $('#reset').click();
+          document.querySelector('#reset').click();
           cancelButton.click();
         });
 
-        cancelButton.on('click', () => {
-          $('#whoWonMenu').hide();
+        cancelButton.addEventListener('click', () => {
+          App.Utils.hide(whoWonMenu);
         });
 
-        $('#whoWonMenu').append(buttonOne).append(buttonTwo).append(cancelButton);
+        whoWonMenu.append(buttonOne, buttonTwo, cancelButton);
       });
 
       /**
@@ -227,11 +253,13 @@
        * @author mauricio.araldi
        * @since  0.6.0
        */
-      $('#reset').on('click', (ev) => {
-        $('.hp').text(20);
-        $('.history > div').empty();
+      document.querySelector('#reset').addEventListener('click', (ev) => {
+        document.querySelectorAll('.hp').forEach((hp) => {
+          hp.textContent = 20;
+        });
+        document.querySelectorAll('.history > div').forEach((history) => history.replaceChildren());
         App.Sockets.counter.getPlayers();
-        $('#openMenu').click();
+        document.querySelector('#openMenu').click();
       });
 
       /**
@@ -240,18 +268,23 @@
        * @author mauricio.araldi
        * @since 0.10.0
        */
-      $('.undo').on('click', (ev) => {
-        const playerPosition = $(ev.target).closest('.controls').data('player-position');
-        const lastHpElement = $(`.history[data-player-position=${playerPosition}]`).find('div > span:last');
-        const lastHpValue = lastHpElement.text().replace('-', '').replace('+', '-');
+      document.querySelectorAll('.undo').forEach((button) => {
+        button.addEventListener('click', (ev) => {
+          const { playerPosition } = ev.target.closest('.controls').dataset;
+          const lastHpElement = document.querySelector(
+            `.history[data-player-position="${CSS.escape(playerPosition)}"] > div > span:first-child`
+          );
 
-        if (lastHpElement.length === 0) {
-          return;
-        }
+          if (!lastHpElement) {
+            return;
+          }
 
-        lastHpElement.remove();
+          const lastHpDelta = Number(lastHpElement.dataset.delta);
 
-        addPlayerHp(playerPosition, Number(lastHpValue), true);
+          lastHpElement.remove();
+
+          addPlayerHp(playerPosition, -lastHpDelta, true);
+        });
       });
     }
 
@@ -272,27 +305,31 @@
      * @author mauricio.araldi
      * @since 0.10.0
      *
-     * @param {number} playerPosition The position of the player to have it's HP add
+     * @param {string} playerPosition The position of the player to have it's HP add
      * @param {number} hpDelta The amount of HP to add
      * @param {boolean} [preventHistory] If the life should NOT be added to history
      */
     function addPlayerHp(playerPosition, hpDelta, preventHistory) {
-      const hpElement = $(`.hp[data-player-position=${playerPosition}]`);
-      const curHp = Number(hpElement.text());
-      const historyElement = $(`.history[data-player-position=${playerPosition}]`);
-      const curHistoryDelta = Number(historyElement.attr('data-delta'));
+      const hpElement = document.querySelector(
+        `.hp[data-player-position="${CSS.escape(playerPosition)}"]`
+      );
+      const curHp = Number(hpElement.textContent);
+      const historyElement = document.querySelector(
+        `.history[data-player-position="${CSS.escape(playerPosition)}"]`
+      );
+      const curHistoryDelta = Number(historyElement.dataset.delta);
 
-      hpElement.text(curHp + hpDelta);
-      historyElement.attr('data-delta', curHistoryDelta + hpDelta);
+      hpElement.textContent = curHp + hpDelta;
+      historyElement.dataset.delta = curHistoryDelta + hpDelta;
 
-      historyElement.attr('data-time', Date.now());
+      historyElement.dataset.time = Date.now();
 
       setTimeout(() => {
-        if (Date.now() - Number(historyElement.attr('data-time')) < App.Config.hpProccessTime) {
+        if (Date.now() - Number(historyElement.dataset.time) < App.Config.hpProccessTime) {
           return;
         }
 
-        let diff = historyElement.attr('data-delta');
+        let diff = historyElement.dataset.delta;
 
         if (diff === '0') {
           return;
@@ -303,11 +340,15 @@
         }
 
         if (!preventHistory) {
-          historyElement.find('div').append($('<span>').text(diff));
+          const historyEntry = document.createElement('span');
+
+          historyEntry.dataset.delta = historyElement.dataset.delta;
+          historyEntry.textContent = `${diff} → ${hpElement.textContent}`;
+          historyElement.querySelector('div').prepend(historyEntry);
         }
 
-        historyElement.scrollTop(historyElement[0].scrollTopMax);
-        historyElement.attr('data-delta', 0);
+        historyElement.scrollTop = 0;
+        historyElement.dataset.delta = 0;
       }, App.Config.hpProccessTime);
     }
 
@@ -321,10 +362,14 @@
      * @param {{[key: string]: {id: string}}} players Players of the draft, keyed by player ID
      */
     function drawPlayers(players) {
-      $('option').remove();
+      const selects = document.querySelectorAll('select');
+
+      selects.forEach((select) => select.replaceChildren());
 
       Object.values(players).forEach((player) => {
-        $('select').append($('<option>').val(player.id).text(player.id));
+        selects.forEach((select) => {
+          select.append(new Option(player.id, player.id));
+        });
       });
     }
 
@@ -336,7 +381,7 @@
      * @since 0.9.0
      */
     function drawNoGame() {
-      $('#NoGame').show();
+      App.Utils.show(document.querySelector('#NoGame'));
     }
 
     return {
@@ -348,8 +393,8 @@
   })();
 
   // DOM Ready -- initializes the module
-  $(() => {
+  document.addEventListener('DOMContentLoaded', () => {
     App.counter.bindEvents();
     App.counter.init();
   });
-})(jQuery, window);
+})(window);

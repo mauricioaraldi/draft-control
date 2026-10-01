@@ -39,7 +39,6 @@ global.Configs = {
 // Configs
 const __dirname = path.resolve();
 app.use(express.static(__dirname + '/public'));
-app.use('/vendor/jquery', express.static(__dirname + '/node_modules/jquery/dist'));
 app.use('/vendor/noty', express.static(__dirname + '/node_modules/noty/lib'));
 app.use('/vendor/normalize', express.static(__dirname + '/node_modules/normalize.css'));
 app.use(
