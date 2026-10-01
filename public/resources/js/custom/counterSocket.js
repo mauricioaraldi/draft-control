@@ -7,6 +7,7 @@
    */
   App.Sockets.counter = (() => {
     const socket = io.connect('/counter');
+    const baseTitle = document.title;
 
     /**
      * Default function with all event bindings related to this module
@@ -23,6 +24,7 @@
        */
       socket.on('players', (data) => {
         $('#draftName').text(data.draft.name);
+        document.title = `${data.draft.name} - ${baseTitle}`;
         App.counter.drawPlayers(data.draft.players);
       });
 

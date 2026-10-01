@@ -22,13 +22,13 @@
        * Change player life
        *
        * @author mauricio.araldi
-       * @since 0.6.0
+       * @since 0.10.0
        */
       $('.buttons > button').on('click', (ev) => {
         const value = Number($(ev.target).text());
-        const player = $(ev.target).closest('.player');
+        const playerPosition = $(ev.target).closest('.controls').data('player-position');
 
-        addPlayerHp(player, value);
+        addPlayerHp(playerPosition, value);
       });
 
       /**
@@ -238,11 +238,11 @@
        * Undoes a player last hp change
        *
        * @author mauricio.araldi
-       * @since 0.7.0
+       * @since 0.10.0
        */
       $('.undo').on('click', (ev) => {
-        const playerElement = $(ev.target).closest('.player');
-        const lastHpElement = playerElement.find('.history > div > span:last');
+        const playerPosition = $(ev.target).closest('.controls').data('player-position');
+        const lastHpElement = $(`.history[data-player-position=${playerPosition}]`).find('div > span:last');
         const lastHpValue = lastHpElement.text().replace('-', '').replace('+', '-');
 
         if (lastHpElement.length === 0) {
@@ -251,7 +251,7 @@
 
         lastHpElement.remove();
 
-        addPlayerHp(playerElement, Number(lastHpValue), true);
+        addPlayerHp(playerPosition, Number(lastHpValue), true);
       });
     }
 
@@ -270,16 +270,16 @@
      *
      * @private
      * @author mauricio.araldi
-     * @since 0.6.0
+     * @since 0.10.0
      *
-     * @param {jQuery} playerElement The player to have it's HP add
+     * @param {number} playerPosition The position of the player to have it's HP add
      * @param {number} hpDelta The amount of HP to add
      * @param {boolean} [preventHistory] If the life should NOT be added to history
      */
-    function addPlayerHp(playerElement, hpDelta, preventHistory) {
-      const hpElement = playerElement.find('.hp');
+    function addPlayerHp(playerPosition, hpDelta, preventHistory) {
+      const hpElement = $(`.hp[data-player-position=${playerPosition}]`);
       const curHp = Number(hpElement.text());
-      const historyElement = playerElement.find('.history');
+      const historyElement = $(`.history[data-player-position=${playerPosition}]`);
       const curHistoryDelta = Number(historyElement.attr('data-delta'));
 
       hpElement.text(curHp + hpDelta);

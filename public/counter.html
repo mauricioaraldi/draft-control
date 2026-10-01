@@ -65,35 +65,43 @@
       <h2>Who won?</h2>
     </div>
 
-    <div id="playerOne" class="player">
-      <select class="name" aria-label="Player"></select>
+    <div id="hpContainer">
+      <span id="playerOneHp" data-player-position="1" class="hp">20</span>
+      <span id="playerTwoHp" data-player-position="2" class="hp">20</span>
+    </div>
 
-      <span class="hp">20</span>
-      <button type="button" class="button undo">U</button>
+    <div id="controlsContainer">
+      <div id="playerOneControls" data-player-position="1" class="controls">
+        <select class="name" aria-label="Player"></select>
 
-      <div class="buttons">
-        <button type="button" class="button">+1</button>
-        <button type="button" class="button">+5</button>
-        <button type="button" class="button">-1</button>
-        <button type="button" class="button">-5</button>
+        <div class="buttons">
+          <button type="button" class="button">+1</button>
+          <button type="button" class="button">+5</button>
+          <button type="button" class="button">-1</button>
+          <button type="button" class="button">-5</button>
+        </div>
+
+        <button type="button" class="button undo">Undo</button>
       </div>
-      <div class="history" data-delta="0" data-time="0">
-        <div></div>
+      <div id="playerTwoControls" data-player-position="2" class="controls">
+        <select class="name" aria-label="Player"></select>
+
+        <div class="buttons">
+          <button type="button" class="button">+1</button>
+          <button type="button" class="button">+5</button>
+          <button type="button" class="button">-1</button>
+          <button type="button" class="button">-5</button>
+        </div>
+
+        <button type="button" class="button undo">Undo</button>
       </div>
     </div>
-    <div id="playerTwo" class="player">
-      <select class="name" aria-label="Player"></select>
 
-      <span class="hp">20</span>
-      <button type="button" class="button undo">U</button>
-
-      <div class="buttons">
-        <button type="button" class="button">+1</button>
-        <button type="button" class="button">+5</button>
-        <button type="button" class="button">-1</button>
-        <button type="button" class="button">-5</button>
+    <div id="historyContainer">
+      <div id="playerOneHistory" data-player-position="1" class="history" data-delta="0" data-time="0">
+        <div></div>
       </div>
-      <div class="history" data-delta="0" data-time="0">
+      <div id="playerTwoHistory" data-player-position="2" class="history" data-delta="0" data-time="0">
         <div></div>
       </div>
     </div>
