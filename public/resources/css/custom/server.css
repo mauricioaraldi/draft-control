@@ -1,25 +1,41 @@
+:root {
+  --fg-primary: #eac117;
+  --fg-secondary: #eae517;
+
+  --bg-primary: #200a63;
+  --bg-secondary: #420461;
+
+  --shadow-color: #000000;
+  --dark-font: #000000;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--fg-secondary);
+}
+
 #logo {
-  color: #eac117;
+  color: var(--fg-primary);
   left: 1rem;
   position: fixed;
-  text-shadow: 1px 1px 1px #000;
+  text-shadow: 1px 1px 1px var(--shadow-color);
   top: 1rem;
 }
 
 h1 {
-  color: #eac117;
+  color: var(--fg-primary);
   font-size: 70px;
   margin: 0 0 -1rem;
   text-align: center;
-  text-shadow: 1px 1px 1px #000;
+  text-shadow: 1px 1px 1px var(--shadow-color);
 }
 
 h2 {
-  color: #eac117;
+  color: var(--fg-primary);
   font-size: 40px;
   margin: 0;
   text-align: center;
-  text-shadow: 1px 1px 1px #000;
+  text-shadow: 1px 1px 1px var(--shadow-color);
 }
 
 select {
@@ -52,17 +68,28 @@ select {
   background-color: #fff;
   border-top: 1px solid #888;
   bottom: 0;
+  display: flex;
+  justify-content: flex-end;
   left: 0;
   position: fixed;
   right: 0;
 }
 
+#tournament-table-menu-btn {
+  justify-self: flex-start;
+}
+
 #buttons button {
-  float: right;
   margin: 0.2em;
 }
 
 /* ------------ */
+
+#suggested-matches {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+}
 
 label {
   display: inline-block;
@@ -72,15 +99,17 @@ label > span {
   display: block;
 }
 
-#suggested-matches p,
-#suggested-matches span {
-  display: inline-block;
-  margin: 0 0.5em;
-  padding: 0.5em;
+.suggested-round {
+  border: 1px solid var(--bg-secondary);
+  display: flex;
+  gap: .5rem;
+  padding: .5rem 1rem;
 }
 
-#suggested-matches p {
+.suggested-match {
   background-color: #dedede;
+  color: var(--dark-font);
+  padding: 0 .5rem;
 }
 
 .player-table {

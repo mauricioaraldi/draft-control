@@ -6,6 +6,97 @@ import PlayerModel from './objects/PlayerModel.js';
  */
 
 /**
+ * Checks if a match between two players already has a registered score
+ *
+ * @author mauricio.araldi
+ * @since 0.10.0
+ *
+ * @param {object} tournament The tournament table of the draft
+ * @param {string} playerId The id of one of the players of the match
+ * @param {string} opponentId The id of the other player of the match
+ * @returns {boolean} If any score was registered for the match
+ */
+function isMatchPlayed(tournament, playerId, opponentId) {
+  const { matchesWon, matchesLost } = tournament[playerId][opponentId];
+  const hasScore = (score) => score !== null && score !== undefined;
+
+  return hasScore(matchesWon) || hasScore(matchesLost);
+}
+
+/**
+ * Finds the best round of simultaneous matches among the pending ones. The best round has
+ * as many matches as possible and, between rounds of the same size, gives priority to the
+ * players with more pending matches, so they don't delay the end of the tournament
+ *
+ * @author mauricio.araldi
+ * @since 0.10.0
+ *
+ * @param {string[]} playerIds The ids of all players of the draft
+ * @param {Map<string, Set<string>>} pendingMatches The opponents each player still has to face
+ * @returns {Array<[string, string]>} The pairs of players that play in the round
+ */
+function findBestRound(playerIds, pendingMatches) {
+  const pendingCount = (playerId) => pendingMatches.get(playerId).size;
+  const players = playerIds
+    .filter((playerId) => pendingCount(playerId) > 0)
+    .toSorted((a, b) => pendingCount(b) - pendingCount(a));
+  const enrolled = new Set();
+  const round = [];
+  let best = { pairs: [], priority: -1 };
+
+  const search = (index, priority) => {
+    while (index < players.length && enrolled.has(players[index])) {
+      index++;
+    }
+
+    const freePlayers = players.slice(index).filter((playerId) => !enrolled.has(playerId));
+    const freePriorities = freePlayers.map((playerId) => pendingCount(playerId));
+    const maxPairs = round.length + Math.floor(freePlayers.length / 2);
+    // With an odd number of free players, at least one of them sits out
+    const maxPriority =
+      priority +
+      freePriorities.reduce((sum, count) => sum + count, 0) -
+      (freePlayers.length % 2 === 1 ? Math.min(...freePriorities) : 0);
+
+    if (
+      maxPairs < best.pairs.length ||
+      (maxPairs === best.pairs.length && maxPriority <= best.priority)
+    ) {
+      return;
+    }
+
+    if (index >= players.length) {
+      best = { pairs: [...round], priority };
+      return;
+    }
+
+    const player = players[index];
+
+    enrolled.add(player);
+
+    for (const opponent of players.slice(index + 1)) {
+      if (enrolled.has(opponent) || !pendingMatches.get(player).has(opponent)) {
+        continue;
+      }
+
+      enrolled.add(opponent);
+      round.push([player, opponent]);
+      search(index + 1, priority + pendingCount(player) + pendingCount(opponent));
+      round.pop();
+      enrolled.delete(opponent);
+    }
+
+    // Also tries the round without this player
+    search(index + 1, priority);
+    enrolled.delete(player);
+  };
+
+  search(0, 0);
+
+  return best.pairs;
+}
+
+/**
  * Manages data and flows about drafts
  *
  * @author mauricio.araldi
@@ -142,13 +233,15 @@ const Draft = {
   },
 
   /**
-   * Builds the suggested matches for a draft
+   * Builds the suggested order for all matches that weren't played yet, grouped in rounds of
+   * matches that can happen at the same time. As it is rebuilt from the registered scores, the
+   * suggestion adapts when a match different from the suggested one is played
    *
    * @author mauricio.araldi
    * @since 0.8.0
    *
    * @param {string} id ID of the draft to have its matches suggested
-   * @returns {string[]} Suggested matches, formatted as "player x opponent"
+   * @returns {string[][]} Rounds of suggested matches, each formatted as "player x opponent"
    */
   buildSuggestedMatches(id) {
     const draft = Drafts[id];
@@ -157,44 +250,35 @@ const Draft = {
       throw new Error(`No valid draft was found for the id ${id}`);
     }
 
-    const suggestedMatches = [];
-    const alreadyEnrolled = [];
-    const players = Object.values(draft.players);
+    const playerIds = Object.keys(draft.players);
+    const pendingMatches = new Map(playerIds.map((playerId) => [playerId, new Set()]));
+    const rounds = [];
 
-    // Sort players by number of games
-    players.sort((a, b) => {
-      const aGames = a.gamesWon + a.gamesLost;
-      const bGames = b.gamesWon + b.gamesLost;
-
-      return aGames - bGames;
-    });
-
-    players.forEach((player) => {
-      // If a match was already suggested to this player, skip it
-      if (alreadyEnrolled.includes(player.id)) {
-        return;
-      }
-
-      for (const opponent of players) {
-        // If is the same as player, or if a match was already suggested for this opponent, skip it
-        if (player.id === opponent.id || alreadyEnrolled.includes(opponent.id)) {
-          continue;
+    playerIds.forEach((playerId, index) => {
+      playerIds.slice(index + 1).forEach((opponentId) => {
+        if (isMatchPlayed(draft.tournament, playerId, opponentId)) {
+          return;
         }
 
-        const { matchesWon } = draft.tournament[player.id][opponent.id];
-
-        // If the player X opponent have played already, skip them
-        if (matchesWon !== null && matchesWon !== undefined) {
-          continue;
-        }
-
-        alreadyEnrolled.push(player.id, opponent.id);
-        suggestedMatches.push(player.id + ' x ' + opponent.id);
-        break;
-      }
+        pendingMatches.get(playerId).add(opponentId);
+        pendingMatches.get(opponentId).add(playerId);
+      });
     });
 
-    return suggestedMatches;
+    let round = findBestRound(playerIds, pendingMatches);
+
+    while (round.length > 0) {
+      rounds.push(round.map(([playerId, opponentId]) => `${playerId} x ${opponentId}`));
+
+      round.forEach(([playerId, opponentId]) => {
+        pendingMatches.get(playerId).delete(opponentId);
+        pendingMatches.get(opponentId).delete(playerId);
+      });
+
+      round = findBestRound(playerIds, pendingMatches);
+    }
+
+    return rounds;
   },
 
   /**

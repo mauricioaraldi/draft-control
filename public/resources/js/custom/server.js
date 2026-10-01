@@ -858,15 +858,24 @@
      * @author mauricio.araldi
      * @since 0.6.0
      *
-     * @param {string[]} data Suggested matches received from server
+     * @param {string[][]} data Rounds of suggested matches received from server (only the first
+     * App.Config.suggestedRoundsShown are drawn)
      */
     function drawSuggestedMatches(data) {
       const suggestedMatches = document.querySelector('#suggested-matches');
 
-      suggestedMatches.querySelectorAll(':scope > p').forEach((match) => match.remove());
+      suggestedMatches.querySelectorAll(':scope > .suggested-round').forEach((round) => {
+        round.remove();
+      });
 
-      data.forEach((suggestedMatch) => {
-        suggestedMatches.append(createElement('p', '', suggestedMatch));
+      data.slice(0, App.Config.suggestedRoundsShown).forEach((matches, index) => {
+        const round = createElement('div', 'suggested-round');
+
+        round.append(
+          createElement('span', '', `Round ${index + 1}:`),
+          ...matches.map((match) => createElement('span', 'suggested-match', match))
+        );
+        suggestedMatches.append(round);
       });
     }
 

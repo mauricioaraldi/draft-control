@@ -9,6 +9,7 @@ App = {
     minorRoundTimeDecrease: 3,
     minorRoundTimeMax: 5,
     secondNotificationBeepTime: 20,
+    suggestedRoundsShown: 2,
     thirdNotificationBeepTime: 10,
   },
 
