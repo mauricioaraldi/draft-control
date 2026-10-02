@@ -22,8 +22,20 @@
        * @since 0.6.0
        */
       socket.on('tournament', (data) => {
-        App.Data.tournament = data;
+        App.Data.tournament = data.tournament;
+        App.Data.players = data.players;
+        App.Data.standings = data.standings;
         App.server.drawTournamentTable();
+      });
+
+      /**
+       * When the server fails to handle a request
+       *
+       * @author mauricio.araldi
+       * @since 0.10.0
+       */
+      socket.on('appError', (message) => {
+        App.Utils.errorPopup(message);
       });
 
       /**
@@ -48,7 +60,7 @@
         // Adjust title
         document.querySelector('h1').textContent = App.Data.name;
         const dateElement = document.querySelector('h2');
-        dateElement.textContent = new Date(App.Data.date).toLocaleDateString('pt-BR');
+        dateElement.textContent = new Date(App.Data.date).toLocaleDateString();
         dateElement.classList.remove('hidden');
       });
 
@@ -65,7 +77,7 @@
           // Adjust title
           document.querySelector('h1').textContent = App.Data.name;
           const dateElement = document.querySelector('h2');
-          dateElement.textContent = new Date(App.Data.date).toLocaleDateString('pt-BR');
+          dateElement.textContent = new Date(App.Data.date).toLocaleDateString();
           dateElement.classList.remove('hidden');
           if (App.Data.players && App.Data.tournament) {
             // Build tournament

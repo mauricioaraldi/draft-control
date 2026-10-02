@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import PlayerModel from './objects/PlayerModel.js';
+import { scheduleSave } from './storage.js';
 
 /**
  * @typedef {import('./objects/DraftModel.js').default} DraftModel
@@ -17,10 +18,11 @@ import PlayerModel from './objects/PlayerModel.js';
  * @returns {boolean} If any score was registered for the match
  */
 function isMatchPlayed(tournament, playerId, opponentId) {
-  const { matchesWon, matchesLost } = tournament[playerId][opponentId];
   const hasScore = (score) => score !== null && score !== undefined;
 
-  return hasScore(matchesWon) || hasScore(matchesLost);
+  return [tournament[playerId][opponentId], tournament[opponentId][playerId]].some(
+    ({ matchesWon, matchesLost }) => hasScore(matchesWon) || hasScore(matchesLost)
+  );
 }
 
 /**
@@ -97,6 +99,36 @@ function findBestRound(playerIds, pendingMatches) {
 }
 
 /**
+ * Gets a draft that has a tournament table, checking that the given players are part of it
+ *
+ * @author mauricio.araldi
+ * @since 0.10.0
+ *
+ * @param {string} id ID of the draft that should hold the tournament
+ * @param {string[]} playerIds IDs of the players that must be in the tournament
+ * @returns {DraftModel} The draft from register
+ */
+function getTournamentDraft(id, playerIds) {
+  const draft = Drafts[id];
+
+  if (!draft?.tournament) {
+    throw new Error(`No tournament was found for the draft ${id}`);
+  }
+
+  playerIds.forEach((playerId) => {
+    if (!Object.hasOwn(draft.tournament, playerId)) {
+      throw new Error(`Player ${playerId} is not part of this tournament`);
+    }
+  });
+
+  if (new Set(playerIds).size !== playerIds.length) {
+    throw new Error('A player cannot play against themselves');
+  }
+
+  return draft;
+}
+
+/**
  * Manages data and flows about drafts
  *
  * @author mauricio.araldi
@@ -109,10 +141,10 @@ const Draft = {
    * @author mauricio.araldi
    * @since  0.10.0
    *
-   * @returns {string} An md5 hex string format to be used as draft ID
+   * @returns {string} A random UUID to be used as draft ID
    */
   generateId() {
-    return crypto.createHash('md5').update(String(Date.now())).digest('hex');
+    return crypto.randomUUID();
   },
 
   /**
@@ -129,6 +161,7 @@ const Draft = {
     }
 
     Drafts[draft.id] = draft;
+    scheduleSave();
   },
 
   /**
@@ -145,7 +178,10 @@ const Draft = {
       throw new Error('An id is required to retrieve a draft from register.');
     }
 
-    CurrentDraft = id;
+    if (Object.hasOwn(Drafts, id)) {
+      CurrentDraft = id;
+    }
+
     return Drafts[id];
   },
 
@@ -174,6 +210,7 @@ const Draft = {
 
     Drafts[id].name = name;
     Drafts[id].date = new Date();
+    scheduleSave();
 
     return Drafts[id];
   },
@@ -191,6 +228,7 @@ const Draft = {
   addPlayer(id, name) {
     Drafts[id].players ||= {};
     Drafts[id].players[name] = new PlayerModel(name);
+    scheduleSave();
 
     return Drafts[id];
   },
@@ -228,6 +266,7 @@ const Draft = {
     });
 
     Drafts[id].tournament = tournament;
+    Draft.updateStandings(id);
 
     return Drafts[id];
   },
@@ -248,6 +287,10 @@ const Draft = {
 
     if (!draft) {
       throw new Error(`No valid draft was found for the id ${id}`);
+    }
+
+    if (!draft.tournament) {
+      return [];
     }
 
     const playerIds = Object.keys(draft.players);
@@ -296,22 +339,95 @@ const Draft = {
    * @returns {DraftModel} The draft from register
    */
   setMatchScore(id, { playerId, playerScore, opponentId, opponentScore }) {
-    if (!Object.hasOwn(Drafts, id)) {
-      throw new Error(`No valid draft was found for the id ${id}`);
-    }
-
+    const { tournament } = getTournamentDraft(id, [playerId, opponentId]);
     const player = playerScore ? Math.trunc(Number(playerScore)) : null;
     const opponent = opponentScore ? Math.trunc(Number(opponentScore)) : null;
 
+    if (Number.isNaN(player) || Number.isNaN(opponent)) {
+      throw new TypeError('Scores must be numbers');
+    }
+
     // Updates table owner score
-    Drafts[id].tournament[playerId][opponentId].matchesWon = player;
-    Drafts[id].tournament[playerId][opponentId].matchesLost = opponent;
+    tournament[playerId][opponentId].matchesWon = player;
+    tournament[playerId][opponentId].matchesLost = opponent;
 
     // Updates opponent score
-    Drafts[id].tournament[opponentId][playerId].matchesWon = opponent;
-    Drafts[id].tournament[opponentId][playerId].matchesLost = player;
+    tournament[opponentId][playerId].matchesWon = opponent;
+    tournament[opponentId][playerId].matchesLost = player;
+
+    Draft.updateStandings(id);
 
     return Drafts[id];
+  },
+
+  /**
+   * Registers the result of a single game, as reported by the life counter
+   *
+   * @author mauricio.araldi
+   * @since 0.10.0
+   *
+   * @param {string} id ID of the draft the game belongs to
+   * @param {object} result Who won and who lost the game
+   * @param {string} result.winner The id of the player who won the game
+   * @param {string} result.loser The id of the player who lost the game
+   * @returns {DraftModel} The draft from register
+   */
+  registerGameResult(id, { winner, loser }) {
+    const { tournament } = getTournamentDraft(id, [winner, loser]);
+
+    tournament[winner][loser].matchesWon++;
+    tournament[loser][winner].matchesLost++;
+
+    Draft.updateStandings(id);
+
+    return Drafts[id];
+  },
+
+  /**
+   * Updates the results of each player and the ranking of the draft. A best-of-three is won
+   * by winning 2 games. The ranking criteria are, in order: best-of-threes won (more is
+   * better), best-of-threes played (more is better), best-of-threes lost (less is better),
+   * games won (more is better) and games lost (less is better)
+   *
+   * @author mauricio.araldi
+   * @since 0.10.0
+   *
+   * @param {string} id ID of the draft to have its standings updated
+   * @returns {DraftModel} The draft from register
+   */
+  updateStandings(id) {
+    const draft = Drafts[id];
+
+    Object.values(draft.players).forEach((player) => {
+      const results = Object.values(draft.tournament[player.id] ?? {});
+
+      player.matchesWon = results.reduce((sum, result) => sum + Number(result.matchesWon), 0);
+      player.matchesLost = results.reduce((sum, result) => sum + Number(result.matchesLost), 0);
+      player.gamesWon = results.reduce(
+        (sum, result) => sum + Math.trunc(Number(result.matchesWon) / 2),
+        0
+      );
+      player.gamesLost = results.reduce(
+        (sum, result) => sum + Math.trunc(Number(result.matchesLost) / 2),
+        0
+      );
+      player.totalGames = player.gamesWon + player.gamesLost;
+    });
+
+    draft.standings = Object.values(draft.players)
+      .toSorted(
+        (a, b) =>
+          b.gamesWon - a.gamesWon ||
+          b.totalGames - a.totalGames ||
+          a.gamesLost - b.gamesLost ||
+          b.matchesWon - a.matchesWon ||
+          a.matchesLost - b.matchesLost
+      )
+      .map((player) => player.id);
+
+    scheduleSave();
+
+    return draft;
   },
 };
 

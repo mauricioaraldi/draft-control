@@ -52,7 +52,7 @@
      * @author mauricio.fiorest
      * @since 0.9.0
      *
-     * @param {{drafts: {[id: string]: string}, current: string}} data Saved drafts (ID to label) and the current draft ID
+     * @param {{drafts: {[id: string]: {name: string, date: string}}, current: string}} data Saved drafts (ID to name and date) and the current draft ID
      */
     function drawHistory(data) {
       const select = document.querySelector('select');
@@ -61,8 +61,9 @@
       placeholder.disabled = true;
       select.replaceChildren(placeholder);
 
-      for (const [draft, label] of Object.entries(data.drafts)) {
+      for (const [draft, { name, date }] of Object.entries(data.drafts)) {
         const isCurrent = draft === data.current;
+        const label = `${name} - ${new Date(date).toLocaleDateString()}`;
 
         select.append(new Option(label, draft, isCurrent, isCurrent));
       }

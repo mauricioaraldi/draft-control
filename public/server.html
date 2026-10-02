@@ -7,21 +7,16 @@
     <!-- Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
 
-    <!-- JS libraries -->
-    <script src="/vendor/noty/noty.min.js"></script>
-
     <!-- JS custom -->
     <script src="resources/js/custom/app.js"></script>
     <script src="resources/js/custom/serverSocket.js"></script>
     <script src="resources/js/custom/server.js"></script>
 
-    <!-- CSS (same order as before: Noty styles load last) -->
+    <!-- CSS -->
     <link href="resources/css/custom/clearfix.css" rel="stylesheet" />
     <link href="/vendor/normalize/normalize.css" rel="stylesheet" />
     <link href="resources/css/custom/index.css" rel="stylesheet" />
     <link href="resources/css/custom/server.css" rel="stylesheet" />
-    <link href="/vendor/noty/themes/metroui.css" rel="stylesheet" />
-    <link href="/vendor/noty/noty.css" rel="stylesheet" />
 
     <meta
       content="Manage a Draft Control draft: players, draft timer and tournament table."
@@ -94,11 +89,20 @@
     </div>
 
     <div id="buttons">
-      <button id="tournament-table-menu-btn" data-page="tournament-table" type="button" class="button" href="#">Menu</button>
+      <button
+        id="tournament-table-menu-btn"
+        type="button"
+        class="button"
+        data-page="tournament-table"
+        href="#"
+      >
+        Menu
+      </button>
+      <a id="open-counter" class="button hidden" href="/" target="_blank">Open counter</a>
       <button id="home" type="button" class="button" href="#">Home</button>
     </div>
 
-    <audio id="alarm-clock-sound" src="resources/sounds/alarmclock.ogg" />
+    <audio id="alarm-clock-sound" src="resources/sounds/heyyeyaaeyaaaeyaeyaa.mp3" />
     <audio id="hi-beep-sound" src="resources/sounds/hi-beep.mp3" />
     <audio id="lo-beep-sound" src="resources/sounds/lo-beep.mp3" />
     <audio id="chime-sound" src="resources/sounds/chime.mp3" />

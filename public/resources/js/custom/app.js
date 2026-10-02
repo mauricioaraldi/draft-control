@@ -37,6 +37,72 @@ App = {
 
   Utils: {
     /**
+     * Shows a dialog that stays open until the user picks one of its buttons
+     *
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {string} type Kind of the dialog, used for its style (error or confirmation)
+     * @param {string} text Message shown to the user
+     * @param {{label: string, action?: () => void}[]} buttons Buttons that close the dialog
+     */
+    dialogPopup(type, text, buttons) {
+      const dialog = document.createElement('dialog');
+      const message = document.createElement('p');
+      const actions = document.createElement('div');
+
+      dialog.className = `popup-dialog popup-${type}`;
+      message.textContent = text;
+      actions.className = 'popup-actions';
+
+      buttons.forEach(({ label, action }) => {
+        const button = document.createElement('button');
+
+        button.type = 'button';
+        button.className = 'button';
+        button.textContent = label;
+        button.addEventListener('click', () => {
+          dialog.close();
+          action?.();
+        });
+        actions.append(button);
+      });
+
+      dialog.addEventListener('close', () => dialog.remove());
+      dialog.append(message, actions);
+      document.body.append(dialog);
+      dialog.showModal();
+    },
+
+    /**
+     * Shows a message at the top of the screen that disappears by itself
+     *
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {string} type Kind of the message, used for its style (success or warning)
+     * @param {string} text Message shown to the user
+     */
+    toastPopup(type, text) {
+      let container = document.querySelector('#toasts');
+
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toasts';
+        document.body.append(container);
+      }
+
+      const toast = document.createElement('div');
+
+      toast.className = `toast popup-${type}`;
+      toast.setAttribute('role', 'status');
+      toast.textContent = text;
+      container.append(toast);
+
+      setTimeout(() => toast.remove(), 3000);
+    },
+
+    /**
      * Default template for the confirmation popup.
      *
      * @param {string} text Question shown to the user
@@ -44,26 +110,10 @@ App = {
      * @param {() => void} [noAction] Called when the user clicks "No"
      */
     confirmPopup(text, yesAction, noAction) {
-      yesAction = typeof yesAction === 'function' ? yesAction : () => {};
-      noAction = typeof noAction === 'function' ? noAction : () => {};
-
-      const confirm = new Noty({
-        layout: 'center',
-        theme: 'metroui',
-        type: 'confirmation',
-        text,
-        dismissQueue: false,
-        buttons: [
-          Noty.button('Yes', 'btn btn-success', () => {
-            yesAction();
-            confirm.close();
-          }),
-          Noty.button('No', 'btn btn-error', () => {
-            noAction();
-            confirm.close();
-          }),
-        ],
-      }).show();
+      App.Utils.dialogPopup('confirmation', text, [
+        { label: 'Yes', action: yesAction },
+        { label: 'No', action: noAction },
+      ]);
     },
 
     /**
@@ -72,13 +122,7 @@ App = {
      * @param {string} text Error message shown to the user
      */
     errorPopup(text) {
-      new Noty({
-        layout: 'center',
-        theme: 'metroui',
-        type: 'error',
-        text,
-        timeout: 3000,
-      }).show();
+      App.Utils.dialogPopup('error', text, [{ label: 'OK' }]);
     },
 
     /**
@@ -87,13 +131,7 @@ App = {
      * @param {string} text Success message shown to the user
      */
     successPopup(text) {
-      new Noty({
-        layout: 'center',
-        theme: 'metroui',
-        type: 'success',
-        text,
-        timeout: 3000,
-      }).show();
+      App.Utils.toastPopup('success', text);
     },
 
     /**
@@ -102,13 +140,7 @@ App = {
      * @param {string} text Warning message shown to the user
      */
     warningPopup(text) {
-      new Noty({
-        layout: 'center',
-        theme: 'metroui',
-        type: 'warning',
-        text,
-        timeout: 3000,
-      }).show();
+      App.Utils.toastPopup('warning', text);
     },
 
     /**

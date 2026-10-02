@@ -1,41 +1,46 @@
 :root {
-  --fg-primary: #eac117;
-  --fg-secondary: #eae517;
+  --color-fg-primary: #eac117;
+  --color-fg-secondary: #e95717;
+  --color-fg-tertiary: #17e9C1;
 
-  --bg-primary: #200a63;
-  --bg-secondary: #420461;
+  --color-border-light: #444444;
+  
+  --color-bg-dark-primary: #2d2504;
+  --color-bg-dark-secondary: #001a1a;
+  --color-bg-light-primary: #ad66a8;
 
-  --shadow-color: #000000;
-  --dark-font: #000000;
+  --color-font-dark: #000;
+  --color-font-light: #eac117;
+  --color-font-shadow-dark: #000;
+  --color-font-shadow-light: #fff;
 }
 
 body {
-  background-color: var(--bg-primary);
-  color: var(--fg-secondary);
+  background-color: var(--color-bg-dark-primary);
+  color: var(--color-font-light);
+  text-shadow: 1px 1px 1px var(--color-font-shadow-dark);
 }
 
 #logo {
-  color: var(--fg-primary);
-  left: 1rem;
+  font-family: Belwe;
+  left: .5rem;
   position: fixed;
-  text-shadow: 1px 1px 1px var(--shadow-color);
-  top: 1rem;
+  top: .5rem;
 }
 
 h1 {
-  color: var(--fg-primary);
+  font-family: Belwe;
   font-size: 70px;
   margin: 0 0 -1rem;
   text-align: center;
-  text-shadow: 1px 1px 1px var(--shadow-color);
 }
 
 h2 {
   color: var(--fg-primary);
-  font-size: 40px;
+  font-family: Belwe;
+  font-size: 28px;
   margin: 0;
   text-align: center;
-  text-shadow: 1px 1px 1px var(--shadow-color);
 }
 
 select {
@@ -65,8 +70,8 @@ select {
 }
 
 #buttons {
-  background-color: #fff;
-  border-top: 1px solid #888;
+  background-color: var(--color-bg-dark-secondary);
+  border-top: 1px solid var(--color-border-light);
   bottom: 0;
   display: flex;
   justify-content: flex-end;
@@ -83,7 +88,7 @@ select {
   margin: 0.2em;
 }
 
-/* ------------ */
+/* Tournament tables */
 
 #suggested-matches {
   align-items: center;
@@ -100,36 +105,39 @@ label > span {
 }
 
 .suggested-round {
-  border: 1px solid var(--bg-secondary);
+  border: 1px solid var(--color-border-light);
   display: flex;
-  gap: .5rem;
-  padding: .5rem 1rem;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
 }
 
 .suggested-match {
-  background-color: #dedede;
-  color: var(--dark-font);
-  padding: 0 .5rem;
+  background-color: var(--color-bg-dark-secondary);
+  color: var(--color-font-light);
+  padding: 0 0.5rem;
 }
 
 .player-table {
-  border: 1px solid #444;
+  border: 1px solid var(--color-border-light);
   border-collapse: collapse;
   display: inline-block;
   margin: 0.5em;
   table-layout: fixed;
   text-align: center;
-  text-shadow: 0 0 1px #fff;
   width: 300px;
 }
 
 .player-table .position {
-  border-bottom: 1px solid #000;
+  border-bottom: 1px solid var(--color-border-light);
   font-family: 'Times New Roman', sans-serif;
 }
 
+.player-table th {
+  background-color: var(--color-bg-dark-secondary);
+}
+
 .player-table td:not(.player-name) {
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .player-table tr:last-child td {
@@ -137,11 +145,13 @@ label > span {
 }
 
 .player-table .win td:not(.player-name) {
-  background-color: #6f0;
+  background-color: var(--color-fg-tertiary);
+  color: var(--color-font-dark);
+  text-shadow: 1px 1px 1px var(--color-font-shadow-light);
 }
 
 .player-table .loss td:not(.player-name) {
-  background-color: #ff7e29;
+  background-color: var(--color-fg-secondary);
 }
 
 .player-table .player-name {
@@ -153,8 +163,8 @@ label > span {
 }
 
 .player-table .score {
-  border-left: 1px solid #444;
-  border-right: 1px solid #444;
+  border-left: 1px solid var(--color-border-light);
+  border-right: 1px solid var(--color-border-light);
   font-size: 30px;
   padding: 0 0.3rem;
 }
@@ -181,12 +191,134 @@ label > span {
 
 @keyframes color {
   0% {
-    background: black;
-    color: white;
+    background: #e81416;
+    color: #fff;
+  }
+
+  14.29% {
+    background: #ffa500;
+    color: #000;
+  }
+
+  28.57% {
+    background: #faeb36;
+    color: #000;
+  }
+
+  42.86% {
+    background: #79c314;
+    color: #000;
+  }
+
+  57.14% {
+    background: #487de7;
+    color: #fff;
+  }
+
+  71.43% {
+    background: #4b369d;
+    color: #fff;
+  }
+
+  85.71% {
+    background: #70369d;
+    color: #fff;
+  }
+}
+
+#alarm-streaks {
+  animation: alarm-trip 1.5s linear infinite;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  z-index: 100;
+}
+
+.alarm-streak {
+  animation-fill-mode: forwards;
+  animation-name: alarm-streak;
+  animation-timing-function: linear;
+  background: var(--color);
+  border-radius: 999px;
+  box-shadow:
+    0 0 12px var(--color),
+    0 0 32px var(--color);
+  height: var(--thickness);
+  left: 50%;
+  margin: calc(var(--thickness) / -2) 0 0 calc(var(--length) / -2);
+  mix-blend-mode: difference;
+  position: absolute;
+  top: 50%;
+  width: var(--length);
+}
+
+@keyframes alarm-streak {
+  0% {
+    transform: rotate(var(--angle)) translate(-120vmax, var(--offset)) scaleY(1);
   }
 
   50% {
-    background: white;
-    color: black;
+    transform: rotate(var(--angle)) translate(0, var(--offset)) scaleY(4);
   }
+
+  100% {
+    transform: rotate(var(--angle)) translate(120vmax, var(--offset)) scaleY(1);
+  }
+}
+
+@keyframes alarm-trip {
+  0% {
+    filter: hue-rotate(0deg) saturate(2);
+  }
+
+  100% {
+    filter: hue-rotate(360deg) saturate(2);
+  }
+}
+
+.alarm-ripple {
+  left: var(--x);
+  position: absolute;
+  top: var(--y);
+}
+
+.alarm-ring {
+  animation: alarm-ring var(--duration) ease-out var(--delay) both;
+  border: var(--border) solid var(--color);
+  border-radius: 50%;
+  box-shadow:
+    0 0 12px var(--color),
+    inset 0 0 12px var(--color);
+  height: var(--size);
+  left: calc(var(--size) / -2);
+  mix-blend-mode: difference;
+  position: absolute;
+  top: calc(var(--size) / -2);
+  width: var(--size);
+}
+
+@keyframes alarm-ring {
+  0% {
+    opacity: var(--opacity);
+    transform: scale(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+#alarm-gifs {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  z-index: 200;
+}
+
+.alarm-gif {
+  height: 200px;
+  position: absolute;
 }

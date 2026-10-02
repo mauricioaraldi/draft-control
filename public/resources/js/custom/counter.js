@@ -214,7 +214,7 @@
         cancelButton.textContent = 'Cancel';
 
         if (playerOne === playerTwo) {
-          App.Utils.errorPopup('Os jogadores não podem ter o mesmo nome');
+          App.Utils.errorPopup('Both players must be different');
           App.Utils.toggle(document.querySelector('#menu'));
           return;
         }

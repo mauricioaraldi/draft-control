@@ -1,5 +1,6 @@
 import Draft from '../Draft.js';
 import DraftModel from '../objects/DraftModel.js';
+import listen from './listen.js';
 
 /**
  * @typedef {import('socket.io').Socket} Socket
@@ -20,21 +21,20 @@ export default (socket) => {
    * @author mauricio.fiorest
    * @since 0.9.0
    */
-  socket.on('loadHistory', (data) => {
-    const temporaryDraft = {};
-    for (const draft in Drafts) {
-      if (Drafts[draft].name) {
-        temporaryDraft[draft] =
-          Drafts[draft].name + ' - ' + new Date(Drafts[draft].date).toLocaleDateString('pt-BR');
-      }
-    }
+  listen(socket, 'loadHistory', (data) => {
+    const drafts = Object.fromEntries(
+      Object.values(Drafts)
+        .filter((draft) => draft.name)
+        .map((draft) => [draft.id, { name: draft.name, date: draft.date }])
+    );
 
-    if (!temporaryDraft) {
+    if (Object.keys(drafts).length === 0) {
       socket.emit('historyUnavailable');
+      return;
     }
 
     socket.emit('history', {
-      drafts: temporaryDraft,
+      drafts,
       current: CurrentDraft,
     });
   });
@@ -45,8 +45,8 @@ export default (socket) => {
    * @author mauricio.fiorest
    * @since 0.9.0
    */
-  socket.on('setName', (data) => {
-    const id = Draft.generateId(socket.handshake.address);
+  listen(socket, 'setName', (data) => {
+    const id = Draft.generateId();
     let draft = new DraftModel(id);
 
     Draft.register(draft);

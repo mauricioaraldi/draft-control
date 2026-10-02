@@ -8,6 +8,7 @@
   App.Sockets.counter = (() => {
     const socket = io.connect('/counter');
     const baseTitle = document.title;
+    const draftId = new URLSearchParams(location.search).get('id') ?? '';
 
     /**
      * Default function with all event bindings related to this module
@@ -16,6 +17,16 @@
      * @since 0.6.0
      */
     function bindEvents() {
+      /**
+       * When the server fails to handle a request
+       *
+       * @author mauricio.araldi
+       * @since 0.10.0
+       */
+      socket.on('appError', (message) => {
+        App.Utils.errorPopup(message);
+      });
+
       /**
        * On receiving players informations
        *
@@ -57,7 +68,7 @@
      * @since 0.6.0
      */
     function getPlayers() {
-      socket.emit('players');
+      socket.emit('players', { id: draftId });
     }
 
     /**
@@ -69,7 +80,7 @@
      * @param {{winner: string, loser: string}} result Names of the winner and the loser of the game
      */
     function endGame(result) {
-      socket.emit('endGame', result);
+      socket.emit('endGame', { ...result, id: draftId });
     }
 
     return {

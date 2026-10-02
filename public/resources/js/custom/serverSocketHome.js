@@ -16,6 +16,16 @@
      */
     function bindEvents() {
       /**
+       * When the server fails to handle a request
+       *
+       * @author mauricio.araldi
+       * @since 0.10.0
+       */
+      socket.on('appError', (message) => {
+        App.Utils.errorPopup(message);
+      });
+
+      /**
        * On receiving history information
        *
        * @author mauricio.fiorest

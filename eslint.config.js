@@ -25,7 +25,7 @@ export default defineConfig([
   },
   {
     // Server code (Node, ES modules). Shared state lives on `global` (see app/app.js).
-    files: ['app/**/*.js', '*.js'],
+    files: ['app/**/*.js', 'tests/**/*.js', '*.js'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -45,7 +45,6 @@ export default defineConfig([
       globals: {
         ...globals.browser,
         io: 'readonly',
-        Noty: 'readonly',
         App: 'writable',
       },
     },

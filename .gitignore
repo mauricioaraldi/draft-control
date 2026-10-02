@@ -2,3 +2,7 @@
 Thumbs.db
 *.bak
 /node_modules
+# Saved drafts
+/data.json
+/data.json.tmp
+/data_old.json

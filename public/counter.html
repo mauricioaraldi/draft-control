@@ -10,21 +10,16 @@
     <!-- Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
 
-    <!-- JS libraries -->
-    <script src="/vendor/noty/noty.min.js"></script>
-
     <!-- JS custom -->
     <script src="resources/js/custom/app.js"></script>
     <script src="resources/js/custom/counter.js"></script>
     <script src="resources/js/custom/counterSocket.js"></script>
 
-    <!-- CSS (same order as before: Noty styles load last) -->
+    <!-- CSS -->
     <link href="resources/css/custom/clearfix.css" rel="stylesheet" />
     <link href="/vendor/normalize/normalize.css" rel="stylesheet" />
     <link href="resources/css/custom/index.css" rel="stylesheet" />
     <link href="resources/css/custom/counter.css" rel="stylesheet" />
-    <link href="/vendor/noty/noty.css" rel="stylesheet" />
-    <link href="/vendor/noty/themes/metroui.css" rel="stylesheet" />
 
     <meta content="Life counter for Draft Control games." name="description" />
     <meta content="telephone=no" name="format-detection" />
@@ -40,8 +35,8 @@
   <body>
     <header>
       <h1 id="draftName">Draft Name</h1>
-      <button id="openMenu" type="button">M</button>
-      <button id="openDieMenu" type="button">D</button>
+      <button id="openMenu" type="button" aria-label="Menu" title="Menu">M</button>
+      <button id="openDieMenu" type="button" aria-label="Roll a die" title="Roll a die">D</button>
     </header>
 
     <div id="menu">
@@ -65,12 +60,12 @@
     </div>
 
     <div id="hpContainer">
-      <span id="playerOneHp" data-player-position="1" class="hp">20</span>
-      <span id="playerTwoHp" data-player-position="2" class="hp">20</span>
+      <span id="playerOneHp" class="hp" data-player-position="1">20</span>
+      <span id="playerTwoHp" class="hp" data-player-position="2">20</span>
     </div>
 
     <div id="controlsContainer">
-      <div id="playerOneControls" data-player-position="1" class="controls">
+      <div id="playerOneControls" class="controls" data-player-position="1">
         <select class="name" aria-label="Player"></select>
 
         <div class="buttons">
@@ -82,7 +77,7 @@
 
         <button type="button" class="button undo">Undo</button>
       </div>
-      <div id="playerTwoControls" data-player-position="2" class="controls">
+      <div id="playerTwoControls" class="controls" data-player-position="2">
         <select class="name" aria-label="Player"></select>
 
         <div class="buttons">
@@ -97,10 +92,22 @@
     </div>
 
     <div id="historyContainer">
-      <div id="playerOneHistory" data-player-position="1" class="history" data-delta="0" data-time="0">
+      <div
+        id="playerOneHistory"
+        class="history"
+        data-delta="0"
+        data-player-position="1"
+        data-time="0"
+      >
         <div></div>
       </div>
-      <div id="playerTwoHistory" data-player-position="2" class="history" data-delta="0" data-time="0">
+      <div
+        id="playerTwoHistory"
+        class="history"
+        data-delta="0"
+        data-player-position="2"
+        data-time="0"
+      >
         <div></div>
       </div>
     </div>

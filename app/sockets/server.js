@@ -1,4 +1,6 @@
 import Draft from '../Draft.js';
+import broadcastTournament from './broadcast.js';
+import listen from './listen.js';
 
 /**
  * @typedef {import('socket.io').Socket} Socket
@@ -22,18 +24,34 @@ export default (socket) => {
   let draft = null;
 
   /**
+   * Gets the ID of the draft this client is working on
+   *
+   * @returns {string} The ID of the open draft
+   */
+  const draftId = () => {
+    if (!draft) {
+      throw new Error('No draft is open on this page');
+    }
+
+    return draft.id;
+  };
+
+  /**
    * On receiving draft ID
    *
    * @author mauricio.araldi
    * @since 0.8.0
    */
-  socket.on('id', (data) => {
+  listen(socket, 'id', (data) => {
     draft = Draft.get(data.id);
 
     if (!draft) {
       socket.emit('draftUnavailable');
+      return;
     }
 
+    // eslint-disable-next-line unicorn/no-unused-builtin-method-return -- Socket#join, not Array#join
+    socket.join(draft.id);
     socket.emit('draftData', draft);
   });
 
@@ -43,8 +61,8 @@ export default (socket) => {
    * @author mauricio.araldi
    * @since 0.8.0
    */
-  socket.on('setName', (data) => {
-    draft = Draft.setName(draft.id, data.draftName);
+  listen(socket, 'setName', (data) => {
+    draft = Draft.setName(draftId(), data.draftName);
     socket.emit('setName', draft);
   });
 
@@ -54,9 +72,11 @@ export default (socket) => {
    * @author mauricio.araldi
    * @since 0.8.0
    */
-  socket.on('players', (data) => {
+  listen(socket, 'players', (data) => {
+    const id = draftId();
+
     data.forEach((playerName) => {
-      draft = Draft.addPlayer(draft.id, playerName);
+      draft = Draft.addPlayer(id, playerName);
     });
 
     socket.emit('players', draft.players);
@@ -68,8 +88,8 @@ export default (socket) => {
    * @author mauricio.araldi
    * @since  0.6.0
    */
-  socket.on('loadGame', (data) => {
-    draft = Draft.get(draft.id);
+  listen(socket, 'loadGame', (data) => {
+    draft = Draft.get(draftId());
     socket.emit('loadGame', draft);
     if (draft.tournament) {
       socket.emit('suggestedMatches', Draft.buildSuggestedMatches(draft.id));
@@ -82,11 +102,10 @@ export default (socket) => {
    * @author mauricio.araldi
    * @since 0.8.0
    */
-  socket.on('tournament', (data) => {
-    draft = Draft.buildTournamentObject(draft.id);
+  listen(socket, 'tournament', (data) => {
+    draft = Draft.buildTournamentObject(draftId());
 
-    socket.emit('tournament', draft.tournament);
-    socket.emit('suggestedMatches', Draft.buildSuggestedMatches(draft.id));
+    broadcastTournament(draft.id);
   });
 
   /**
@@ -95,10 +114,9 @@ export default (socket) => {
    * @author mauricio.araldi
    * @since 0.8.0
    */
-  socket.on('updateScore', (data) => {
-    draft = Draft.setMatchScore(draft.id, data);
+  listen(socket, 'updateScore', (data) => {
+    draft = Draft.setMatchScore(draftId(), data);
 
-    socket.emit('tournament', draft.tournament);
-    socket.emit('suggestedMatches', Draft.buildSuggestedMatches(draft.id));
+    broadcastTournament(draft.id);
   });
 };

@@ -5,6 +5,13 @@
  */
 ((window) => {
   let decreaser;
+  let streakSpawner;
+  const rainbow = ['#e81416', '#ffa500', '#faeb36', '#79c314', '#487de7', '#4b369d', '#70369d'];
+  const alarmGifs = ['he-man-dancing.gif', 'he-man-yeah.gif', 'skeletor-angry.gif'];
+  const alarmGifLoops = 3;
+  const alarmGifHeight = 200;
+  const alarmGifTimers = new Set();
+  let alarmGifsLoading;
 
   App.server = (() => {
     /**
@@ -242,7 +249,11 @@
             clearInterval(decreaser);
 
             document.querySelector('#alarm-clock-sound').play();
-            document.body.classList.add('alarm-playing');
+
+            setTimeout(() => {
+              document.body.classList.add('alarm-playing');
+              startAlarmStreaks();
+            }, 1300);
           }, 1000);
         }, 500);
       });
@@ -257,6 +268,7 @@
         const alarmClockSound = document.querySelector('#alarm-clock-sound');
 
         document.body.classList.remove('alarm-playing');
+        stopAlarmStreaks();
         alarmClockSound.pause();
         alarmClockSound.currentTime = 0;
 
@@ -333,6 +345,19 @@
     }
 
     /**
+     * Points the counter link to the counter of this draft
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     */
+    function setCounterLink() {
+      const draftId = new URLSearchParams(location.search).get('id');
+
+      document.querySelector('#open-counter').href = `/?id=${encodeURIComponent(draftId)}`;
+    }
+
+    /**
      * Draws the player form
      *
      * @public
@@ -356,6 +381,7 @@
      * @since 0.9.0
      */
     function load() {
+      setCounterLink();
       setLoading(true);
 
       App.Sockets.Server.loadGame();
@@ -416,6 +442,7 @@
       // Reset everything
       document.querySelector('#buttons').classList.add('hidden');
       document.querySelector('#buttons > #load')?.classList.add('hidden');
+      document.querySelector('#open-counter').classList.add('hidden');
 
       document.querySelector('#draft-name').classList.add('hidden');
 
@@ -448,6 +475,7 @@
         }
 
         case 'table': {
+          document.querySelector('#open-counter').classList.remove('hidden');
           document.querySelector('#buttons').classList.remove('hidden');
           document.querySelector('#buttons > #load')?.classList.remove('hidden');
           document.querySelector('#tournament-table').classList.remove('hidden');
@@ -621,8 +649,8 @@
       changeScreen('table');
       tables.replaceChildren();
 
-      getPlayersInOrder().forEach((player, index) => {
-        tables.append(buildPlayerTable(player.id, index + 1));
+      App.Data.standings.forEach((playerId, index) => {
+        tables.append(buildPlayerTable(playerId, index + 1));
       });
 
       setLoading(false);
@@ -644,20 +672,13 @@
       const playerTable = App.Data.tournament[playerId];
       const htmlTable = createElement('table', 'player-table');
       const positionTr = createElement('tr', 'position');
-      const positionTd = createElement('td', '', position + 'º');
+      const positionTh = createElement('th', '', position + 'º');
       let isCreatePlayerName = true;
-      let totalGamesWon = 0;
-      let totalGamesLost = 0;
-      let totalMatchesWon = 0;
-      let totalMatchesLost = 0;
 
-      positionTd.colSpan = 5;
-      positionTr.append(positionTd);
+      positionTh.colSpan = 5;
+      positionTr.append(positionTh);
       htmlTable.dataset.playerId = playerId;
       htmlTable.append(positionTr);
-
-      App.Data.players[playerId].matchesWon = 0;
-      App.Data.players[playerId].matchesLost = 0;
 
       // Runs all the players to build the matches of a player
       for (const [opponentId, opponent] of Object.entries(App.Data.players)) {
@@ -694,12 +715,6 @@
         const { matchesWon, matchesLost } = playerTable[opponentId];
         playerScore.textContent = matchesWon || (matchesLost ? '0' : '');
         oppScore.textContent = matchesLost || (matchesWon ? '0' : '');
-        totalMatchesWon += matchesWon ? Number(matchesWon) : 0;
-        totalMatchesLost += matchesLost ? Number(matchesLost) : 0;
-
-        // If the wins/loses are 2 or higher, adds a win/lose to player
-        totalGamesWon += Math.trunc(matchesWon / 2);
-        totalGamesLost += Math.trunc(matchesLost / 2);
 
         if (matchesWon > 1 && matchesWon > matchesLost) {
           tr.classList.add('win');
@@ -712,17 +727,10 @@
         htmlTable.append(tr);
       }
 
-      // Adjust player object
-      App.Data.players[playerId].gamesWon = totalGamesWon;
-      App.Data.players[playerId].gamesLost = totalGamesLost;
-      App.Data.players[playerId].totalGames = totalGamesWon + totalGamesLost;
-      App.Data.players[playerId].matchesWon = totalMatchesWon;
-      App.Data.players[playerId].matchesLost = totalMatchesLost;
-
       htmlTable.querySelector('.player-games-score').textContent =
-        `G: ${App.Data.players[playerId].gamesWon}/${App.Data.players[playerId].gamesWon + App.Data.players[playerId].gamesLost}`;
+        `G: ${player.gamesWon}/${player.gamesWon + player.gamesLost}`;
       htmlTable.querySelector('.player-matches-score').textContent =
-        `M: ${App.Data.players[playerId].matchesWon}/${App.Data.players[playerId].matchesWon + App.Data.players[playerId].matchesLost}`;
+        `M: ${player.matchesWon}/${player.matchesWon + player.matchesLost}`;
 
       return htmlTable;
     }
@@ -746,47 +754,6 @@
       });
 
       placesElement.textContent = places.slice(0, -2);
-    }
-
-    /**
-     * Updates the ranking
-     *
-     * @private
-     * @author mauricio.araldi
-     * @since 0.5.0
-     *
-     * @returns {object[]} Players sorted from first to last place
-     */
-    function getPlayersInOrder() {
-      // Gets all players that will be drawed
-      const playerOrder = Object.values(App.Data.players);
-
-      playerOrder.sort((a, b) => {
-        // 1st Criteria = games won (more is better)
-        if (a.gamesWon !== b.gamesWon) {
-          return b.gamesWon - a.gamesWon;
-        }
-
-        // 2nd Criteria = total games played (more is better)
-        if (a.totalGames !== b.totalGames) {
-          return b.totalGames - a.totalGames;
-        }
-
-        // 3rd Criteria = games lost (less is beter)
-        if (a.gamesLost !== b.gamesLost) {
-          return a.gamesLost - b.gamesLost;
-        }
-
-        // 4th Criteria = matches won (more is better)
-        if (a.matchesWon !== b.matchesWon) {
-          return b.matchesWon - a.matchesWon;
-        }
-
-        // 5th Criteria = matches lost (less is better)
-        return a.matchesLost - b.matchesLost;
-      });
-
-      return playerOrder;
     }
 
     /**
@@ -849,6 +816,192 @@
       }
 
       return element;
+    }
+
+    /**
+     * Starts sending colored streaks flying across the screen
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     */
+    function startAlarmStreaks() {
+      const container = createElement('div');
+
+      container.id = 'alarm-streaks';
+      document.body.append(container);
+      startAlarmGifs();
+
+      streakSpawner = setInterval(() => {
+        const amount = 1 + Math.floor(Math.random() * 3);
+
+        for (let index = 0; index < amount && container.childElementCount < 120; index++) {
+          spawnStreak(container);
+        }
+      }, 60);
+    }
+
+    /**
+     * Creates a streak with random direction, size, speed and color
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {HTMLElement} container Element the streak flies inside
+     */
+    function spawnStreak(container) {
+      const streak = createElement('div', 'alarm-streak');
+      const random = (min, max) => {
+        const distance = Math.random() * (max - min);
+
+        return min + distance;
+      };
+
+      streak.style.setProperty('--angle', `${random(0, 360)}deg`);
+      streak.style.setProperty('--offset', `${random(-50, 50)}vmax`);
+      streak.style.setProperty('--length', `${random(20, 80)}vmax`);
+      streak.style.setProperty('--thickness', `${random(2, 12)}px`);
+      streak.style.setProperty('--color', rainbow[Math.floor(Math.random() * rainbow.length)]);
+      streak.style.animationDuration = `${random(300, 900)}ms`;
+      streak.addEventListener('animationend', () => streak.remove());
+
+      container.append(streak);
+    }
+
+    /**
+     * Reads the size and the duration of one loop of a GIF from its file
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {ArrayBuffer} buffer Content of the GIF file
+     * @returns {{width: number, height: number, loopDuration: number}} Size in pixels and
+     * duration of one loop in milliseconds
+     */
+    function readGifInfo(buffer) {
+      const view = new DataView(buffer);
+      let loopDuration = 0;
+
+      for (let index = 13; index < view.byteLength - 6; index++) {
+        const isFrameDelay =
+          view.getUint8(index) === 0x21 &&
+          view.getUint8(index + 1) === 0xf9 &&
+          view.getUint8(index + 2) === 0x04;
+
+        if (!isFrameDelay) {
+          continue;
+        }
+
+        const delay = view.getUint16(index + 4, true);
+
+        loopDuration += (delay < 2 ? 10 : delay) * 10;
+        index += 7;
+      }
+
+      return {
+        width: view.getUint16(6, true),
+        height: view.getUint16(8, true),
+        loopDuration: loopDuration || 1000,
+      };
+    }
+
+    /**
+     * Loads the alarm GIFs once, keeping their content and information
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @returns {Promise<{blob: Blob, width: number, height: number, loopDuration: number}[]>}
+     * The loaded GIFs
+     */
+    function loadAlarmGifs() {
+      alarmGifsLoading ??= Promise.all(
+        alarmGifs.map(async (fileName) => {
+          const response = await fetch(`resources/images/${fileName}`);
+          const blob = await response.blob();
+
+          return { blob, ...readGifInfo(await blob.arrayBuffer()) };
+        })
+      );
+
+      return alarmGifsLoading;
+    }
+
+    /**
+     * Shows each alarm GIF at a random place on the screen
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     */
+    async function startAlarmGifs() {
+      const container = createElement('div');
+
+      container.id = 'alarm-gifs';
+      document.body.append(container);
+
+      try {
+        const gifs = await loadAlarmGifs();
+
+        gifs.forEach((gif) => showAlarmGif(container, gif));
+      } catch (error) {
+        console.error('Could not load the alarm GIFs', error);
+      }
+    }
+
+    /**
+     * Shows a GIF at a random place until it plays its loops, then shows it somewhere else
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {HTMLElement} container Element the GIF appears inside
+     * @param {{blob: Blob, width: number, height: number, loopDuration: number}} gif GIF to show
+     */
+    function showAlarmGif(container, gif) {
+      if (!container.isConnected) {
+        return;
+      }
+
+      const image = createElement('img', 'alarm-gif');
+      const width = (gif.width / gif.height) * alarmGifHeight;
+      const left = Math.random() * Math.max(0, window.innerWidth - width);
+      const top = Math.random() * Math.max(0, window.innerHeight - alarmGifHeight);
+      const url = URL.createObjectURL(gif.blob);
+
+      image.src = url;
+      image.alt = '';
+      image.style.left = `${left}px`;
+      image.style.top = `${top}px`;
+      container.append(image);
+
+      const timer = setTimeout(() => {
+        alarmGifTimers.delete(timer);
+        image.remove();
+        URL.revokeObjectURL(url);
+        showAlarmGif(container, gif);
+      }, gif.loopDuration * alarmGifLoops);
+
+      alarmGifTimers.add(timer);
+    }
+
+    /**
+     * Stops the streaks and removes the ones still on screen
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     */
+    function stopAlarmStreaks() {
+      clearInterval(streakSpawner);
+      document.querySelector('#alarm-streaks')?.remove();
+      alarmGifTimers.forEach((timer) => clearTimeout(timer));
+      alarmGifTimers.clear();
+      document.querySelector('#alarm-gifs')?.remove();
     }
 
     /**

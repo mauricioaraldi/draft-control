@@ -1,6 +1,11 @@
+import Draft from '../Draft.js';
+import broadcastTournament from './broadcast.js';
+import listen from './listen.js';
+
 /**
  * @typedef {import('socket.io').Socket} Socket
  */
+
 /**
  * Counter socket, attached to the `/counter` namespace.
  *
@@ -10,15 +15,30 @@
  */
 export default (socket) => {
   /**
+   * Gets the ID of the draft the counter is working on. It is the one in the counter URL or,
+   * when the URL has none, the last draft opened on a server page
+   *
+   * @param {{id?: string}} [data] Data sent by the counter
+   * @returns {string} The draft ID, or an empty string if there is no draft
+   */
+  const draftIdOf = (data) => {
+    const id = data?.id || CurrentDraft;
+
+    return Object.hasOwn(Drafts, id) ? id : '';
+  };
+
+  /**
    * When players are requested
    *
    * @author mauricio.araldi
    * @since 0.6.0
    */
-  socket.on('players', (data) => {
-    if (CurrentDraft) {
+  listen(socket, 'players', (data) => {
+    const id = draftIdOf(data);
+
+    if (id) {
       socket.emit('players', {
-        draft: Drafts[CurrentDraft],
+        draft: Drafts[id],
       });
     } else {
       socket.emit('noGame', '');
@@ -31,17 +51,15 @@ export default (socket) => {
    * @author mauricio.araldi
    * @since 0.6.0
    */
-  socket.on('endGame', (data) => {
-    if (CurrentDraft) {
-      // Updates winner score
-      Drafts[CurrentDraft].tournament[data.winner][data.loser].matchesWon++;
+  listen(socket, 'endGame', (data) => {
+    const id = draftIdOf(data);
 
-      // Updates loser score
-      Drafts[CurrentDraft].tournament[data.loser][data.winner].matchesLost++;
-
-      io.of('/server').emit('tournament', Drafts[CurrentDraft].tournament);
-    } else {
+    if (!id) {
       socket.emit('noGame', '');
+      return;
     }
+
+    Draft.registerGameResult(id, data);
+    broadcastTournament(id);
   });
 };
