@@ -22,10 +22,13 @@
        * @since 0.6.0
        */
       socket.on('tournament', (data) => {
+        const previousTournament = App.Data.tournament;
+
         App.Data.tournament = data.tournament;
         App.Data.players = data.players;
         App.Data.standings = data.standings;
         App.server.drawTournamentTable();
+        App.server.announceResults(previousTournament, data.tournament);
       });
 
       /**

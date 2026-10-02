@@ -1,10 +1,10 @@
 :root {
   --color-fg-primary: #eac117;
   --color-fg-secondary: #e95717;
-  --color-fg-tertiary: #17e9C1;
+  --color-fg-tertiary: #17e9c1;
 
   --color-border-light: #444444;
-  
+
   --color-bg-dark-primary: #2d2504;
   --color-bg-dark-secondary: #001a1a;
   --color-bg-light-primary: #ad66a8;
@@ -21,17 +21,17 @@ body {
   text-shadow: 1px 1px 1px var(--color-font-shadow-dark);
 }
 
-#logo {
-  font-family: Belwe;
-  left: .5rem;
-  position: fixed;
-  top: .5rem;
+header {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 h1 {
   font-family: Belwe;
   font-size: 70px;
-  margin: 0 0 -1rem;
+  margin: -1rem 0 -0.5rem;
   text-align: center;
 }
 
@@ -84,17 +84,16 @@ select {
   justify-self: flex-start;
 }
 
-#buttons button {
+#buttons button,
+#buttons .button {
   margin: 0.2em;
 }
 
-/* Tournament tables */
-
-#suggested-matches {
-  align-items: center;
-  display: flex;
-  gap: 1rem;
+#toggle-voice[aria-pressed='false'] {
+  opacity: 0.6;
 }
+
+/* Tournament tables */
 
 label {
   display: inline-block;
@@ -104,16 +103,11 @@ label > span {
   display: block;
 }
 
-.suggested-round {
-  border: 1px solid var(--color-border-light);
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-}
-
 .suggested-match {
   background-color: var(--color-bg-dark-secondary);
   color: var(--color-font-light);
+  display: inline-block;
+  margin: 0.1rem 0.2rem;
   padding: 0 0.5rem;
 }
 
@@ -156,6 +150,17 @@ label > span {
 
 .player-table .player-name {
   width: 35%;
+  padding: 0 .3rem;
+}
+
+.player-table .player-name .suggestions-label {
+  display: block;
+  margin: .3rem 0;
+}
+
+.player-table .player-name p {
+  padding: 0;
+  margin: 0 0 1rem;
 }
 
 .player-table .divider {
@@ -169,7 +174,7 @@ label > span {
   padding: 0 0.3rem;
 }
 
-.player-table .score,
+/*.player-table .score,*/
 .player-table .divider {
   width: 5%;
 }
@@ -274,39 +279,6 @@ label > span {
 
   100% {
     filter: hue-rotate(360deg) saturate(2);
-  }
-}
-
-.alarm-ripple {
-  left: var(--x);
-  position: absolute;
-  top: var(--y);
-}
-
-.alarm-ring {
-  animation: alarm-ring var(--duration) ease-out var(--delay) both;
-  border: var(--border) solid var(--color);
-  border-radius: 50%;
-  box-shadow:
-    0 0 12px var(--color),
-    inset 0 0 12px var(--color);
-  height: var(--size);
-  left: calc(var(--size) / -2);
-  mix-blend-mode: difference;
-  position: absolute;
-  top: calc(var(--size) / -2);
-  width: var(--size);
-}
-
-@keyframes alarm-ring {
-  0% {
-    opacity: var(--opacity);
-    transform: scale(0);
-  }
-
-  100% {
-    opacity: 0;
-    transform: scale(1);
   }
 }
 

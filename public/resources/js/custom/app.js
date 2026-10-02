@@ -3,14 +3,26 @@ App = {
     addHpDelta: 30,
     draftRoundTime: 11.5,
     firstNotificationBeepTime: 30,
+    gameWonPhrases: [
+      '{winner} destruiu o deck fraco do {loser}',
+      '{winner} mandou {loser} de volta pro deckbuilding',
+      'Que vergonha, {loser}. {winner} levou a melhor de três',
+    ],
     hpProccessTime: 800,
     majorRoundTimeDecrease: 8,
     majorRoundTimeMax: 10,
+    matchWonPhrases: [
+      '{winner} amassou {loser}',
+      '{loser} levou uma surra de {winner}',
+      'Ponto pro {winner}',
+    ],
     minorRoundTimeDecrease: 3,
     minorRoundTimeMax: 5,
     secondNotificationBeepTime: 20,
-    suggestedRoundsShown: 2,
+    suggestedMatchesShown: 2,
     thirdNotificationBeepTime: 10,
+    voiceLang: 'pt-BR',
+    voiceRate: 1,
   },
 
   Keys: {
@@ -170,6 +182,82 @@ App = {
       }
 
       return times-- > 0 ? App.Utils.shuffle(array, times) : array;
+    },
+
+    /**
+     * Tells if the voice announcements are enabled in this browser
+     *
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @returns {boolean} If the voice is enabled
+     */
+    isVoiceEnabled() {
+      try {
+        return localStorage.getItem('voiceEnabled') !== 'false';
+      } catch {
+        return true;
+      }
+    },
+
+    /**
+     * Enables or disables the voice announcements in this browser
+     *
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {boolean} enabled If the voice should be enabled
+     */
+    setVoiceEnabled(enabled) {
+      try {
+        localStorage.setItem('voiceEnabled', String(enabled));
+      } catch {}
+    },
+
+    /**
+     * Speaks a text aloud, with a voice of App.Config.voiceLang when the browser has one
+     *
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {string} text Text to be spoken
+     */
+    speak(text) {
+      if (!App.Utils.isVoiceEnabled() || !('speechSynthesis' in window)) {
+        return;
+      }
+
+      const { voiceLang, voiceRate } = App.Config;
+      const voices = speechSynthesis.getVoices();
+      const utterance = new SpeechSynthesisUtterance(text);
+
+      utterance.lang = voiceLang;
+      utterance.rate = voiceRate;
+      utterance.voice =
+        voices.find((voice) => voice.lang.replace('_', '-') === voiceLang) ??
+        voices.find((voice) => voice.lang.startsWith(voiceLang.split('-', 1)[0])) ??
+        null;
+
+      speechSynthesis.speak(utterance);
+    },
+
+    /**
+     * Picks a random phrase and fills its placeholders, written as {name}
+     *
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {string[]} phrases Phrases to pick from
+     * @param {{[key: string]: string}} values Values of the placeholders, keyed by their names
+     * @returns {string} The filled phrase
+     */
+    randomPhrase(phrases, values) {
+      const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+
+      return phrase.replaceAll(
+        /\{(?<name>\w+)\}/gv,
+        (placeholder, name) => values[name] ?? placeholder
+      );
     },
 
     /**

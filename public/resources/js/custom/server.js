@@ -161,6 +161,19 @@
       });
 
       /**
+       * Turns the voice announcements on or off
+       *
+       * @author mauricio.araldi
+       * @since 0.10.0
+       */
+      document.querySelector('#toggle-voice').addEventListener('click', (ev) => {
+        App.Utils.setVoiceEnabled(!App.Utils.isVoiceEnabled());
+        drawVoiceToggle();
+      });
+
+      drawVoiceToggle();
+
+      /**
        * Return to home screen
        *
        * @author mauricio.fiorest
@@ -443,6 +456,7 @@
       document.querySelector('#buttons').classList.add('hidden');
       document.querySelector('#buttons > #load')?.classList.add('hidden');
       document.querySelector('#open-counter').classList.add('hidden');
+      document.querySelector('#toggle-voice').classList.add('hidden');
 
       document.querySelector('#draft-name').classList.add('hidden');
 
@@ -476,6 +490,7 @@
 
         case 'table': {
           document.querySelector('#open-counter').classList.remove('hidden');
+          document.querySelector('#toggle-voice').classList.remove('hidden');
           document.querySelector('#buttons').classList.remove('hidden');
           document.querySelector('#buttons > #load')?.classList.remove('hidden');
           document.querySelector('#tournament-table').classList.remove('hidden');
@@ -637,6 +652,56 @@
     }
 
     /**
+     * Speaks the matches and games won between two versions of the tournament. When a match
+     * also closes a game (best-of-three), only the game is announced
+     *
+     * @public
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {{[playerId: string]: {[oppId: string]: {matchesWon: number}}}} [previous] Tournament
+     * before the change
+     * @param {{[playerId: string]: {[oppId: string]: {matchesWon: number}}}} current Tournament
+     * after the change
+     */
+    function announceResults(previous, current) {
+      if (!previous || Object.keys(previous).length === 0) {
+        return;
+      }
+
+      Object.entries(current).forEach(([winner, results]) => {
+        Object.entries(results).forEach(([loser, result]) => {
+          const matchesWon = Number(result.matchesWon);
+          const previousMatchesWon = Number(previous[winner]?.[loser]?.matchesWon ?? 0);
+
+          if (matchesWon <= previousMatchesWon) {
+            return;
+          }
+
+          const isGameWon = Math.trunc(matchesWon / 2) > Math.trunc(previousMatchesWon / 2);
+          const phrases = isGameWon ? App.Config.gameWonPhrases : App.Config.matchWonPhrases;
+
+          App.Utils.speak(App.Utils.randomPhrase(phrases, { winner, loser }));
+        });
+      });
+    }
+
+    /**
+     * Shows if the voice is enabled in its toggle button
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     */
+    function drawVoiceToggle() {
+      const enabled = App.Utils.isVoiceEnabled();
+      const button = document.querySelector('#toggle-voice');
+
+      button.setAttribute('aria-pressed', String(enabled));
+      button.textContent = enabled ? 'Voice on' : 'Voice off';
+    }
+
+    /**
      * Draws onscreen the players table
      *
      * @public
@@ -705,7 +770,8 @@
           playerName.append(
             createElement('p', '', player.id),
             createElement('p', 'player-games-score'),
-            createElement('p', 'player-matches-score')
+            createElement('p', 'player-matches-score'),
+            createElement('p', 'player-suggestions')
           );
           tr.append(playerName);
           isCreatePlayerName = false;
@@ -728,9 +794,10 @@
       }
 
       htmlTable.querySelector('.player-games-score').textContent =
-        `G: ${player.gamesWon}/${player.gamesWon + player.gamesLost}`;
+        `Games: ${player.gamesWon}/${player.gamesWon + player.gamesLost}`;
       htmlTable.querySelector('.player-matches-score').textContent =
-        `M: ${player.matchesWon}/${player.matchesWon + player.matchesLost}`;
+        `Matches: ${player.matchesWon}/${player.matchesWon + player.matchesLost}`;
+      drawPlayerSuggestions(htmlTable);
 
       return htmlTable;
     }
@@ -1005,34 +1072,58 @@
     }
 
     /**
-     * Draws suggested matches on screen
+     * Draws suggested matches on screen, in the table of each player
      *
      * @public
      * @author mauricio.araldi
      * @since 0.6.0
      *
-     * @param {string[][]} data Rounds of suggested matches received from server (only the first
-     * App.Config.suggestedRoundsShown are drawn)
+     * @param {string[][]} data Rounds of suggested matches received from server, each match
+     * formatted as "player x opponent"
      */
     function drawSuggestedMatches(data) {
-      const suggestedMatches = document.querySelector('#suggested-matches');
+      App.Data.suggestedMatches = data;
 
-      suggestedMatches.querySelectorAll(':scope > .suggested-round').forEach((round) => {
-        round.remove();
-      });
-
-      data.slice(0, App.Config.suggestedRoundsShown).forEach((matches, index) => {
-        const round = createElement('div', 'suggested-round');
-
-        round.append(
-          createElement('span', '', `Round ${index + 1}:`),
-          ...matches.map((match) => createElement('span', 'suggested-match', match))
-        );
-        suggestedMatches.append(round);
+      document.querySelectorAll('.player-table').forEach((htmlTable) => {
+        drawPlayerSuggestions(htmlTable);
       });
     }
 
+    /**
+     * Draws in a player table the opponents of the next suggested matches of that player (only
+     * the first App.Config.suggestedMatchesShown are drawn)
+     *
+     * @private
+     * @author mauricio.araldi
+     * @since 0.10.0
+     *
+     * @param {HTMLTableElement} htmlTable Player table, with the player ID in its dataset
+     */
+    function drawPlayerSuggestions(htmlTable) {
+      const { playerId } = htmlTable.dataset;
+      const suggestions = htmlTable.querySelector('.player-suggestions');
+      const opponentIds = Object.keys(App.Data.players).filter((id) => id !== playerId);
+      const opponents = (App.Data.suggestedMatches ?? [])
+        .flat()
+        .map((match) =>
+          opponentIds.find(
+            (opponentId) =>
+              match === `${playerId} x ${opponentId}` || match === `${opponentId} x ${playerId}`
+          )
+        )
+        .filter(Boolean)
+        .slice(0, App.Config.suggestedMatchesShown);
+
+      suggestions.replaceChildren(
+        createElement('span', 'suggestions-label', 'Suggestions:'),
+        ...(opponents.length > 0
+          ? opponents.map((opponentId) => createElement('span', 'suggested-match', opponentId))
+          : ['-'])
+      );
+    }
+
     return {
+      announceResults,
       bindEvents,
       drawSuggestedMatches,
       drawTournamentTable,
